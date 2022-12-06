@@ -62,16 +62,18 @@ def main():
     unit = np.pad(unit, pad_width = [(1, 1),(1, 1)], mode = "constant")
     number = img[min(x_coords):max(x_coords), min(y_coords):max(y_coords)-30]
     number = np.pad(number, pad_width = [(1, 1),(1, 1)], mode = "constant")
-
+    # segmentation technique - one line with many possible char-s
+    # https://github.com/madmaze/pytesseract
+    # https://muthu.co/all-tesseract-ocr-options/
     custom_config= r'--psm 10'
 
     try:
         for val in range(10, 22, 1):
-            detected_nr = str(pytesseract.image_to_string(cv2.resize(cv2.threshold(number, 250, 255, cv2.THRESH_BINARY)[1], (val, val)), config =custom_config, timeout = 0.5)).split("y\n\x0c")[0].strip() # Timeout after 2 seconds
+            detected_nr = str(pytesseract.image_to_string(cv2.resize(cv2.threshold(number, 250, 255, cv2.THRESH_BINARY)[1], (val, val)), config =custom_config, timeout = 2)).split("y\n\x0c")[0].strip() # Timeout after 2 seconds
             if detected_nr in pot_values:
                 value_unit_scale.append(int(detected_nr))
                 counter.append(1)
-            detected_unit = str(pytesseract.image_to_string(cv2.resize(cv2.threshold(unit, 250, 255, cv2.THRESH_BINARY)[1], (val, val)), config =custom_config, timeout = 0.5)).split("y\n\x0c")[0].strip() # Timeout after 2 seconds                
+            detected_unit = str(pytesseract.image_to_string(cv2.resize(cv2.threshold(unit, 250, 255, cv2.THRESH_BINARY)[1], (val, val)), config =custom_config, timeout = 2)).split("y\n\x0c")[0].strip() # Timeout after 2 seconds                
             if detected_unit in pot_units:
                 value_unit_scale.append(detected_unit)
                 counter.append(2)
@@ -94,7 +96,7 @@ def main():
     print(value_unit_scale)
 
 
-    # cv2.imshow('Original', img)
+    cv2.imshow('Original', img)
     #cv2.imshow("result", result)
     #cv2.imshow("value", number)
 
