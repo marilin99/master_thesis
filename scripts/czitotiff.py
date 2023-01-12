@@ -9,17 +9,19 @@ from pathlib import Path
 # assuming the data folder is in the same folder as this script
 # FILES = os.listdir("/home/marilin/Documents/ESP/data") # change this once files in nextcloud or sth 
 
-PATH = "data/15june2022/"
+#PATH = "data/15june2022/"
 
-FILES = os.listdir(PATH)
-FIN = []
+# FILES = os.listdir(PATH)
+# FIN = []
 
-for file in FILES:
-	if "txt" not in file:
-		file = PATH + file
-		FIN.append(file)
+# for file in FILES:
+# 	if "txt" not in file:
+# 		file = PATH + file
+# 		FIN.append(file)
 
-print(FIN)
+# print(FIN)
+
+FIN = ["/home/marilin/Documents/ESP/data/15june2022/spin1_DAPImounting_stack5.czi"]
 
 # function taken from https://github.com/AllenCellModeling/aicspylibczi
 def norm_by(x, min_, max_):

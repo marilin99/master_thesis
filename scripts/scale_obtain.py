@@ -101,7 +101,7 @@ def main():
     #cv2.imshow("value", number)
 
     
-    # Quit the program when 'q' is pressed
+    #Quit the program when 'q' is pressed
     # if (cv2.waitKey(1) & 0xFF) == ord('q'):
     #     cv2.destroyAllWindows()
     #     break
