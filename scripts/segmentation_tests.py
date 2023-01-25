@@ -54,8 +54,10 @@ segments_fz = felzenszwalb(img, scale=100, sigma=0.5, min_size=10)
 
 print(f'Felzenszwalb number of segments: {len(np.unique(segments_fz))}')
 
+### misc conversion
+# img = cv2.bitwise_not(cv2.imread("/home/marilin/Documents/ESP/diameterJ_test/sem_test/Segmented Images/EcN_II_PEO_131120_GML_15k_01_S1.tif",0))
 
-cv2.imshow("testing", mark_boundaries(img, segments_fz))
+# cv2.imwrite("/home/marilin/Documents/ESP/diameterJ_test/sem_test/Segmented Images/EcN_II_PEO_131120_GML_15k_01_S1_reverse.tif", img)
 
 # cv2.imshow('result', result)
 cv2.imshow('original', sample_image)

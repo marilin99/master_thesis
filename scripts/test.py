@@ -5,6 +5,7 @@ import difflib
 import matplotlib.pyplot as plt
 
 PATH_1 = "/home/marilin/Documents/ESP/data/SEM/EcN_II_PEO_131120_GML_15k_01.tif"
+
 trackbar_value = 1
 
 def updateValue(new_value):

@@ -4,6 +4,9 @@
 import os.path
 import numpy as np
 import cv2
+import matplotlib.pyplot as plt
+from scipy import ndimage
+from scipy.ndimage import *
 
 thresholds = {"lH": 0,"lS": 37, "lV": 133, "hH": 44, "hS": 255, "hV": 249}
 
@@ -84,34 +87,73 @@ def main():
        
         frame = cv2.imread(img)
         cv2.imshow("Original", frame) 
+
+
+
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        # green - 36,25,26,70,255,249
+        # green - 25,15,20,70,255,255
         # red - 0,25,26,31,255,249
         lowerLimits = np.array([thresholds["lH"], thresholds["lS"], thresholds["lV"]])
         upperLimits = np.array([thresholds["hH"], thresholds["hS"], thresholds["hV"]])
-        
+        thresholded_r = cv2.inRange(frame, lowerLimits, upperLimits)
             
     # Our operations on the frame come here 
+        
+        #lowerLimits_g = np.array([36,25,26])
+        #upperLimits_g = np.array([70,255,249])
 
-        thresholded = cv2.inRange(frame, lowerLimits, upperLimits)
-        thresholded = cv2.bitwise_not(thresholded)
+        lowerLimits_g = np.array([thresholds["lH"], thresholds["lS"], thresholds["lV"]])
+        upperLimits_g = np.array([thresholds["hH"], thresholds["hS"], thresholds["hV"]])
+        
+        thresholded_g = cv2.inRange(frame, lowerLimits_g, upperLimits_g)
+        # labeling output - labelled array - mat of features
+
+        labeled_array, num_features = label(thresholded_r)
+        labeled_array_g, _ = label(thresholded_g)
+
+
+        kernel = np.ones((3,3),np.uint8)
+        erosion = cv2.erode(thresholded_g, kernel, iterations = 1)
+        cv2.imshow("eroded", erosion)
+        #print(num_features)
+        # sizes of thresholded objects in px 
+        # depends on the value from .xml about px to um
+        # let's say 1px is 0.04um for now ca 25 px is one cell
+        # excluding background px-s
+        bac_in_px = 34
+        px_counter = np.bincount(labeled_array.flatten())
+        filtered_counter_r = px_counter[np.where(px_counter > bac_in_px)][:-1]
+
+        px_counter_g = np.bincount(labeled_array_g.flatten())
+        filtered_counter_g = px_counter_g[np.where(px_counter_g > bac_in_px)][:-1]
+
+        print("red", np.sum(filtered_counter_r[1:]// bac_in_px))
+        print("green", np.sum(filtered_counter_g[1:]// bac_in_px))
+        #idx_from_25 = np.argsort(np.bincount(labeled_array.flatten()))[24:-1]
+        #print(each_feat_size[idx_from_25])
+        #print(amount_of_reds)
+        #print(sorted(filtered_counter))
+
+        #thresholded = cv2.bitwise_not(thresholded)
         frame = cv2.cvtColor(frame, cv2.COLOR_HSV2BGR)
-        outimage = cv2.bitwise_and(frame, frame, mask = thresholded)
+        outimage = cv2.bitwise_and(frame, frame, mask = thresholded_g)
+
+        #cv2.imwrite("outimage.png", outimage)
 
     # contouring 
-        (cnt, _) = cv2.findContours(thresholded.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        (cnt, _) = cv2.findContours(thresholded_r.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         rgb = cv2.cvtColor(frame, cv2.COLOR_HSV2RGB)
-        cv2.drawContours(rgb, cnt, -1, (0, 255, 0), 2)
+        #cv2.drawContours(rgb, cnt, -1, (0, 255, 0), 2)
 
-        cv2.imshow("rgb", rgb)
+        #cv2.imshow("rgb", rgb)
         #(cnt, hierarchy) = cv2.findContours(dilated.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
-        print(len(cnt))
+        #print(len(cnt))
         
     # Display the resulting frame - thresholded image (use to check the where the ball is 
         cv2.imshow("Processed", outimage)
         #cv2.imshow("Original", frame) 
-        cv2.imshow("Thresholded", thresholded)
+        #cv2.imshow("Thresholded", thresholded_g)
         
 
     # Quit the program when "q" is pressed
