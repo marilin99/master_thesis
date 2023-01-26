@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import imagej
 import scyjava as sj
 
+# https://pyimagej.readthedocs.io/en/latest/Initialization.html
 PATH_1 = "/home/marilin/Documents/ESP/data/SEM/EcN_II_PEO_131120_GML_15k_01.tif"
 plugins_dir = '/home/marilin/Documents/ESP/diameterJ_test/ImageJ/plugins'
 
