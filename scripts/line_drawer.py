@@ -123,7 +123,7 @@ def find_nearest_whites(img, origin):
 
 
 
-
+#find_nearest_white(kernel_2, [n2//2,0])
 ############################################################
 # polynomial fitting - draw lines against the polynomial to find the most perpendicular one (once a pt is established - needs a tangent and angle between the drawn line and tangent )
 
@@ -208,7 +208,7 @@ def find_nearest_whites(img, origin):
 
 ############################################################################
 # drawing kernel for sanity check
-cv2.rectangle(thinned, (y,x-(n2//2)), (y+n2+1,x+(n2//2 +1)), (255,255,255),1)
+cv2.rectangle(thinned.astype(np.uint8), (y,x-(n2//2)), (y+n2+1,x+(n2//2 +1)), (255,255,255),1)
 
 # other graphical el-s
 

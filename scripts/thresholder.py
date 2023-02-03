@@ -96,39 +96,48 @@ def main():
         lowerLimits = np.array([thresholds["lH"], thresholds["lS"], thresholds["lV"]])
         upperLimits = np.array([thresholds["hH"], thresholds["hS"], thresholds["hV"]])
         thresholded_r = cv2.inRange(frame, lowerLimits, upperLimits)
+        cv2.imwrite("thresholded_r.png", thresholded_r)
             
     # Our operations on the frame come here 
         
         #lowerLimits_g = np.array([36,25,26])
         #upperLimits_g = np.array([70,255,249])
 
-        lowerLimits_g = np.array([thresholds["lH"], thresholds["lS"], thresholds["lV"]])
-        upperLimits_g = np.array([thresholds["hH"], thresholds["hS"], thresholds["hV"]])
+        # lowerLimits_g = np.array([thresholds["lH"], thresholds["lS"], thresholds["lV"]])
+        # upperLimits_g = np.array([thresholds["hH"], thresholds["hS"], thresholds["hV"]])
         
-        thresholded_g = cv2.inRange(frame, lowerLimits_g, upperLimits_g)
+        #thresholded_g = cv2.inRange(frame, lowerLimits_g, upperLimits_g)
+        #cv2.imwrite("thresholded_g.png", thresholded_g)
         # labeling output - labelled array - mat of features
 
         labeled_array, num_features = label(thresholded_r)
-        labeled_array_g, _ = label(thresholded_g)
+        #labeled_array_g, _ = label(thresholded_g)
+        
+        # sometimes erosion may help 
+        # kernel = np.ones((3,3),np.uint8)
+        # erosion = cv2.erode(thresholded_g, kernel, iterations = 1)
+        # cv2.imshow("eroded", erosion)
 
-
-        kernel = np.ones((3,3),np.uint8)
-        erosion = cv2.erode(thresholded_g, kernel, iterations = 1)
-        cv2.imshow("eroded", erosion)
         #print(num_features)
+
+        ### one way of finding the bacteria count 
+
         # sizes of thresholded objects in px 
         # depends on the value from .xml about px to um
         # let's say 1px is 0.04um for now ca 25 px is one cell
         # excluding background px-s
         bac_in_px = 34
-        px_counter = np.bincount(labeled_array.flatten())
-        filtered_counter_r = px_counter[np.where(px_counter > bac_in_px)][:-1]
+        ## red bac
+        # px_counter = np.bincount(labeled_array.flatten())
+        # filtered_counter_r = px_counter[np.where(px_counter > bac_in_px)][:-1]
 
-        px_counter_g = np.bincount(labeled_array_g.flatten())
-        filtered_counter_g = px_counter_g[np.where(px_counter_g > bac_in_px)][:-1]
+        ## green bac
+        # px_counter_g = np.bincount(labeled_array_g.flatten())
+        # filtered_counter_g = px_counter_g[np.where(px_counter_g > bac_in_px)][:-1]
 
-        print("red", np.sum(filtered_counter_r[1:]// bac_in_px))
-        print("green", np.sum(filtered_counter_g[1:]// bac_in_px))
+        # print("red", np.sum(filtered_counter_r[1:]// bac_in_px))
+        # print("green", np.sum(filtered_counter_g[1:]// bac_in_px))
+
         #idx_from_25 = np.argsort(np.bincount(labeled_array.flatten()))[24:-1]
         #print(each_feat_size[idx_from_25])
         #print(amount_of_reds)
@@ -136,13 +145,13 @@ def main():
 
         #thresholded = cv2.bitwise_not(thresholded)
         frame = cv2.cvtColor(frame, cv2.COLOR_HSV2BGR)
-        outimage = cv2.bitwise_and(frame, frame, mask = thresholded_g)
+        outimage = cv2.bitwise_and(frame, frame, mask = thresholded_r)
 
         #cv2.imwrite("outimage.png", outimage)
 
     # contouring 
-        (cnt, _) = cv2.findContours(thresholded_r.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-        rgb = cv2.cvtColor(frame, cv2.COLOR_HSV2RGB)
+        # (cnt, _) = cv2.findContours(thresholded_r.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        # rgb = cv2.cvtColor(frame, cv2.COLOR_HSV2RGB)
         #cv2.drawContours(rgb, cnt, -1, (0, 255, 0), 2)
 
         #cv2.imshow("rgb", rgb)

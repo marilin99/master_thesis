@@ -1,3 +1,5 @@
+############## this is for fiber segmentation testing ############################
+
 from scipy import ndimage
 from scipy.ndimage import *
 import cv2
