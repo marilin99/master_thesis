@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import pytesseract
 import re
 
-PATH_1 = "/home/marilin/Documents/ESP/data/SEM/EcN_II_PEO_131120_GML_15k_05.tif" # 400
+PATH_1 = "/home/marilin/Documents/ESP/data/SEM/EcN_II_PEO_131120_GML_15k_01.tif" # 400
 #PATH_1 = "/home/marilin/Documents/ESP/data/SEM/Lactis_PEO_111220_20k04.tif" # 1
 #PATH_1 =  "/home/marilin/Documents/ESP/data/SEM/Lactis_PEO_111220_20k03.tif" # 2 
 #PATH_1 =  "/home/marilin/Documents/ESP/data/SEM/EcN_II_PEO_131120_GML_5k_02.tif" # small scale

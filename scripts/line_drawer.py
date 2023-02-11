@@ -6,112 +6,36 @@ import skimage.exposure
 import matplotlib.pyplot as plt 
 import skimage.morphology 
 from scipy.spatial import distance
+from scipy import stats
+import time 
 
+start_time = time.time()
 # this was a thresholded image which has been filled in with pinta for cont. purposes - getting a clean img is still an issue (12.01)
 orig = cv2.imread("/home/marilin/Documents/ESP/data/SEM/EcN_II_PEO_131120_GML_15k_01.tif",0)[:650, :]
 
+# this image is segmented using statistical region merging from diameterj imagej - from 650 is the scale box 
 PATH_1 = cv2.imread("/home/marilin/Documents/ESP/diameterJ_test/sem_test/Segmented Images/EcN_II_PEO_131120_GML_15k_01_S1_reverse.tif",0)[:650, :]
 
-# selecting a pixel that is bordering a black pixel
-# make this px as the center of a 13x13 kernel - sanity check and for choosing the direction of the regression line
+#### helper functions ####
 
-
-# choosing 1 white px - edges should be fixed 
-# while 1:
-#     rnd_idx = np.random.randint(1, (len(np.where(PATH_1 > 0)[0]))-1, 1)
-#     x, y = np.where(PATH_1 > 0)[0][rnd_idx][0], np.where(PATH_1 > 0)[1][rnd_idx][0]
-#     # neighboring px-s from white should be black (U+L, U+R / B+L, B+R) but majority of kernel should be white
-
-#     # relative to px pos
- 
-#     U = PATH_1[x-1][y]
-#     R = PATH_1[x][y+1]
-#     L = PATH_1[x][y-1]
-#     B = PATH_1[x+1][y]
-
-#     # safe check 
-#     if (U == 0 and L == 0) or (U == 0 and R == 0) or (B == 0 and L == 0) or (B == 0 and R == 0):
-#         # kernel edge length
-#         n = 13
-#         #Creating a 13x13 kernel where x,y is the midpoint 
-#         kernel_1 = PATH_1[x-(n//2):x+(n//2+1), y-(n//2):y+(n//2+1)]
-
-#         if np.count_nonzero(kernel_1) > ((n**2) // 2):
-#             break
-
-# print(kernel_1)
-# print(x,y)
-
-# on the img reversed 
-x,y = 332, 695
-
-# distance transform
-# skimage outputs the distance in ceiled to int 
-thinned = skimage.morphology.medial_axis(PATH_1).astype(np.uint8)
-
-
-thinned[thinned == 1] = 255
-
-#print(np.nonzero(thinned))
-
-dist = cv2.distanceTransform(PATH_1, cv2.DIST_L2, 3)
-#print(np.max(dist))
-# max distance from edge to medial axis before normalization
-n2 = int(round(np.max(dist)))
-# Normalize the distance image for range = {0.0, 1.0}
-# so we can visualize and threshold it
-dist = cv2.normalize(dist, dist, 0, 1.0, cv2.NORM_MINMAX)
-
-#print(np.unique(dist))
-cv2.imshow('Distance Transform Image', dist)
-
-#cv2.imshow("edges", edges)
-# how can i find perpendicularity from one px? (along on diag? - towards the direction of more whites? - if same, then look 
-# at the general direction of whites?)
-# 4 diagonals possible - the quarter with the most whites wins?
-
-
-n = 13
-# #Creating a 13x13 kernel where x,y is the midpoint 
-kernel_1 = PATH_1[x-(n//2):x+(n//2+1), y-(n//2):y+(n//2+1)]
-
-# # find biggest sum
-UL = np.sum(kernel_1[:n//2, :n//2])
-UR = np.sum(kernel_1[:n//2:, n//2+1:])
-LL = np.sum(kernel_1[n//2+1:, :n//2])
-LR = np.sum(kernel_1[n//2+1:, n//2+1:])
-
-# returning idx-s of quarter 
-quarters = np.array(["UL", "UR", "LL", "LR"])
-# https://stackoverflow.com/questions/17568612/how-to-make-numpy-argmax-return-all-occurrences-of-the-maximum
-winners = quarters[np.flatnonzero(np.array([UL, UR, LL, LR]) == np.max(np.array([UL, UR, LL, LR])))]
-
-# if 2 quarters have high sums - px will become in the middle of the outer edge of a new kernel 
-# depending on the side of higher values, the px will be on one of the edges
-# if one quarter will have higher values - turning the kernel according to the location of the quarter 
-
-# potential combos - UL+LL, UR+LR, UL+UR, LL+LR, and all quarters separately 
-
-if 'UR' and 'LR' in winners:
-     kernel_2 = thinned[x-(n2//2): x+(n2//2 +1), y:y+n2+1]
 
 # https://stackoverflow.com/questions/45225474/find-nearest-white-pixel-to-a-given-pixel-location-opencv
-
-
 def find_nearest_white(img, origin):
      """
-     more naive version 
+     more naive version using euc distance
      """
      nonzero =  np.transpose(np.nonzero(img))
      # euc dist
      distances = np.sqrt((nonzero[:,0] - origin[0]) ** 2 + (nonzero[:,1] - origin[1]) ** 2)
      nearest_index = np.argmin(distances)
+
      return nonzero[nearest_index]
 
 
 def find_nearest_whites(img, origin):
      """
      for polynomial fitting 
+     outputs idx-s of 15 nearest whites
      """
      nonzero =  np.transpose(np.nonzero(img))
      # euc dist
@@ -120,10 +44,222 @@ def find_nearest_whites(img, origin):
      nearest_index = np.argsort(distances)[:15]
      return nonzero[nearest_index]
 
+#####
+
+
+######### selecting a pixel that is bordering a black pixel from 2 sides #######
+
+# make this px as the center of a 13x13 kernel - sanity check and for choosing the direction of the regression line
+
+np.random.seed(0)
+dist = cv2.distanceTransform(PATH_1, cv2.DIST_L2, 3)
+thinned = skimage.morphology.medial_axis(PATH_1).astype(np.uint8)
+thinned[thinned == 1] = 255
+h,w = PATH_1.shape[0],PATH_1.shape[1]
+n2 = int(np.ceil(np.max(dist)))
+
+coords = []
+# collecting exceptions w x,y and "winners"
+exc_cases = []
+
+while True:
+     # choosing idx of white px - randint should be excluding high values
+     
+     rnd_idx = np.random.randint(0, (len(np.where(PATH_1 > 0)[0])), 1)
+
+     x, y = np.where(PATH_1 > 0)[0][rnd_idx][0], np.where(PATH_1 > 0)[1][rnd_idx][0]
+
+     # refacto this   (temp safety net: 34<x<h-y, 34 < y < w-y)
+     while not (n2 < x < (h-n2)) and (n2 < y < (w-n2) ):
+          rnd_idx = np.random.randint(0, (len(np.where(PATH_1 > 0)[0])), 1)
+          x, y = np.where(PATH_1 > 0)[0][rnd_idx][0], np.where(PATH_1 > 0)[1][rnd_idx][0]
+
+
+     # neighboring px-s from white should be black (U+L, U+R / B+L, B+R) but majority of kernel should be white
+
+     # relative to px pos
+     try:
+          U = PATH_1[x-1][y]
+          R = PATH_1[x][y+1]
+          L = PATH_1[x][y-1]
+          B = PATH_1[x+1][y]
+     # if too much in the border - find a better location 
+     except:
+          continue
+
+#      # safe check - exclusive or to avoid obscure situations or stick to or?
+     if (U == 0 and L == 0) ^ (U == 0 and R == 0) ^ (B == 0 and L == 0) ^ (B == 0 and R == 0):
+          coords.append((x,y))
+
+     if len(coords) == 100:
+          break
+
+          # kernel edge length
+          #n = 13
+          # #Creating a 13x13 kernel where x,y is the midpoint 
+          # #kernel_1 = PATH_1[x-(n//2):x+(n//2+1), y-(n//2):y+(n//2+1)]
+          # xs.append(x)
+          # ys.append(y)
+#           # no clue why i have this condition
+#           # if np.count_nonzero(kernel_1) > ((n**2) // 2):
+#           #      break
+#           # else:
+
+            
+     
+
+# # on the img x,y are reversed 
+
+# # saving dm-s in a list to show histogram in the end
+dm_s = []
+# # for understanding exceptions
+# coords = [(514,1010)]
+for x,y in coords: 
+#x,y = 332, 695
+     print(x,y)
+# distance transform
+# skimage outputs the distance in ceiled to int 
+
+# # #print(np.max(dist))
+
+# # # max distance from edge to medial axis before normalization
+
+
+# # #print(stats.describe(dist))
+# # # if max is 34 - the kernel should be 35x35 - or maybe omit it as an outlier?
+
+# # # Normalize the distance image for range = {0.0, 1.0}
+# # # so we can visualize and threshold it
+# # #dist = cv2.normalize(dist, dist, 0, 1.0, cv2.NORM_MINMAX)
+
+# # #print(np.unique(dist))
+# # #cv2.imshow('Distance Transform Image', dist)
+
+
+# # # how can i find perpendicularity from one px? (along on diag? - towards the direction of more whites? - if same, then look 
+# # # at the general direction of whites?)
+# # # 4 diagonals possible - the quarter with the most whites wins?
+
+# ### direction choosing ###
+     n = 13
+     # #Creating a 13x13 kernel where x,y is the midpoint 
+     kernel_1 = PATH_1[x-(n//2):x+(n//2+1), y-(n//2):y+(n//2+1)]
+
+     # # find biggest sum
+     UL = np.sum(kernel_1[:n//2, :n//2])
+     UR = np.sum(kernel_1[:n//2, n//2+1:])
+     LL = np.sum(kernel_1[n//2+1:, :n//2])
+     LR = np.sum(kernel_1[n//2+1:, n//2+1:])
+
+     # returning strings of quarter 
+     quarters = np.array(["UL", "UR", "LL", "LR"])
+#      # https://stackoverflow.com/questions/17568612/how-to-make-numpy-argmax-return-all-occurrences-of-the-maximum
+     winners = quarters[np.flatnonzero(np.array([UL, UR, LL, LR]) == np.max(np.array([UL, UR, LL, LR])))]
+
+# ####
+
+     print(winners)
+# # # if 2 quarters have high sums - px will become in the middle of the outer edge of a new kernel 
+# # # depending on the side of higher values, the px will be on one of the edges
+# # # if one quarter will have higher values - turning the kernel according to the location of the quarter 
+
+# #### conditioning for kernel edge size ####
+
+     #h,w = PATH_1.shape[0],PATH_1.shape[1]
+     
+     #n2 = int(np.ceil(np.max(dist)))
+     # edge cases (if x or y are too close to the edge - should not be a problem with the x,y safety net above)
+     if (y+n2) > w or (x+n2) > h or (y-n2) < 0 or (x-n2) < 0:
+          n2 = np.min((abs(0-x), (h-x), (w-y), abs(0-y)))
+  
+# ####
+
+# # potential combos - UL+LL, UR+LR, UL+UR, LL+LR, and all quarters separately 
+# flooring w even kernel can become uneven - heads-up!
+# # refacto try-excepts please :) 
+     # edge cases
+     
+     print(n2)
+
+     if len(winners) == 2:
+          if 'UR' and 'LR' in winners:
+               kernel_2 = thinned[ x-(n2//2): x+(n2//2 ), y:(y+n2)]
+
+          elif 'UL' and 'LL' in winners:
+               kernel_2 = thinned[ x-(n2//2) : x+(n2//2), (y-n2):y]
+               
+          elif 'LR' and 'LL' in winners:
+               kernel_2 = thinned[ x : (x+n2), y-(n2//2) :y + (n2//2)]
+           
+          elif 'UR' and 'UL' in winners:
+               kernel_2 = thinned[ (x-n2) : x, y-(n2//2) :y + (n2//2)]
+
+# # could also use rhombus for individual quarters
+# # from skimage.draw import polygon 
+# # points: rhombus vertices 
+# # np.transpose(points)
+# # rr,cc = polgon(*points) - these are the coordinates for rhombi
+# # img[rr,cc] = 1
+
+     elif len(winners) == 1: # 1 winner or 3 which is unlikely but still sth to look out for 
+          if 'UR' in winners:    
+               kernel_2 = thinned[ x-n2: x, y:y+n2]
+
+
+          elif 'UL' in winners:
+               kernel_2 = thinned[ x-n2: x, y-n2:y]
+
+
+          elif 'LL' in winners:
+               kernel_2 = thinned[ x: x + n2, y-n2:y]
+
+          elif 'LR' in winners:
+               kernel_2 = thinned[ x:x+n2, y:y+n2]
+               #print(kernel_2)
+
+     elif len(winners) == 3: # 3 winners has two cases - just creating bigger rectangles in that case - 2x n2 as midpoint is in the middle and furthest might be max dist away (edge cases biggest kerny)
+          if n2 == int(np.ceil(np.max(dist))):
+               kernel_2 = PATH_1[x-((2*n2) //2) : x+(((2*n2)//2)+1), y-((2*n2)//2):y+((2*n2)//2+1)]
+          else:
+               kernel_2 = PATH_1[x-(n2//2):x+(n2//2+1), y-(n2//2):y+(n2//2+1)]
+
+
+     #print(kernel_2)
 
 
 
-#find_nearest_white(kernel_2, [n2//2,0])
+     # could include it in the function  - this computation is done to ensure that the end selection stays constant no matter the kernel size
+     try:
+          x_new = x + abs(n2//2 - find_nearest_white(kernel_2, [n2//2,0])[0])
+          y_new = y + abs(0 - find_nearest_white(kernel_2, [n2//2,0])[1])
+          px_dist = dist[x_new][y_new]
+     # # values of this image from scale_obtain.py 
+          nano_per_px = 400 / 22
+          dm = int(2 * px_dist * nano_per_px)
+
+          dm_s.append((x,y,x_new, y_new, dm))
+
+     except: 
+          exc_cases.append((x,y, winners))
+          continue
+
+
+print("time taken:", time.time() - start_time)
+print(dm_s)
+print(exc_cases)
+
+## for analysis
+
+with open("dm_info.txt", "w+") as file:
+     for val in dm_s:
+          file.write(f"{val}")
+          file.write("\n")
+     
+with open("exc_cases.txt", "w+") as file:
+     for val in exc_cases:
+          file.write(f"{val}")
+          file.write("\n")
+
 ############################################################
 # polynomial fitting - draw lines against the polynomial to find the most perpendicular one (once a pt is established - needs a tangent and angle between the drawn line and tangent )
 
@@ -208,7 +344,7 @@ def find_nearest_whites(img, origin):
 
 ############################################################################
 # drawing kernel for sanity check
-cv2.rectangle(thinned.astype(np.uint8), (y,x-(n2//2)), (y+n2+1,x+(n2//2 +1)), (255,255,255),1)
+#cv2.rectangle(thinned.astype(np.uint8), (y-(n//2), y+(n//2+1)), (x-(n2//2), x+(n2//2 +1)), (255,255,255),1)
 
 # other graphical el-s
 
@@ -216,11 +352,13 @@ cv2.rectangle(thinned.astype(np.uint8), (y,x-(n2//2)), (y+n2+1,x+(n2//2 +1)), (2
 #cv2.polylines(thinned, [points], isClosed=False, color = (255,255,255), thickness = 1)
 #cv2.line(thinned, (695,332), (712,332), (255,255,255), 1)
 
-cv2.imshow("thinned", thinned.astype(np.uint8))
-orig = cv2.circle(orig, (y,x), radius=4, color=(0, 0, 255), thickness=-1)
-#print(np.count_nonzero(PATH_1))
-#cv2.imshow("direction", theta)
-cv2.imshow("thresh", PATH_1)
-cv2.imshow("orig", orig)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# thinned = skimage.morphology.medial_axis(PATH_1).astype(np.uint8)
+# thinned[thinned == 1] = 255
+# cv2.imshow("thinned", thinned.astype(np.uint8))
+# orig = cv2.circle(orig, (1010,514), radius=4, color=(0, 0, 255), thickness=-1)
+# # # #print(np.count_nonzero(PATH_1))
+# # # #cv2.imshow("direction", theta)
+# # # cv2.imshow("thresh", PATH_1)
+# cv2.imshow("orig", orig)
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
