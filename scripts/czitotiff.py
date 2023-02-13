@@ -29,7 +29,7 @@ from scipy.ndimage import *
 
 # print(FIN)
 
-FIN = ["/home/marilin/Documents/ESP/data/16.08.22_dead_live/control_50killed_syto_PI_3.czi"]
+FIN = ["/home/marilin/Documents/ESP/data/16.08.22_dead_live/sack_fibers_NOgrowth_syto_PI_1.czi"]
 #"/home/marilin/Documents/ESP/data/SYTO_PI/sack_fibers_NOgrowth_syto_PI_1-Image Export-10_z01c1-3.jpg"]
 
 # function taken from https://github.com/AllenCellModeling/aicspylibczi
@@ -142,11 +142,11 @@ for file in FIN:
 # # show each channel individually
 cv2.imshow("green", G)
 cv2.imshow("red", R)
-cv2.imwrite("green_intensities_03.png", G)
-cv2.imwrite("red_intensities_03.png", R)
-cv2.imwrite("merged_intensities_03.png", merged)
-cv2.imshow("transmission",T)
-cv2.imshow("Merged", merged)
+cv2.imwrite("green_intensities_24h_growth.png", G)
+cv2.imwrite("red_intensities_24h_growth.png", R)
+#cv2.imwrite("merged_intensities_incub_4h_1.png", merged)
+#cv2.imshow("transmission",T)
+#cv2.imshow("Merged", merged)
 #cv2.imshow("res", result)
 # cv2.imshow("thresh", thresh)
 # cv2.imshow("edges", edged)
