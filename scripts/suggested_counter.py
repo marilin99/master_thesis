@@ -12,7 +12,7 @@ from scipy.ndimage.filters import maximum_filter
 from scipy.ndimage.morphology import generate_binary_structure, binary_erosion
 from skimage.feature import peak_local_max
 import scipy.ndimage.filters as filters 
-
+import time 
 from varname import argname
 
 # uncomment this if showing image using other src than opencv 
@@ -20,26 +20,27 @@ from varname import argname
 # 	if k.startswith("QT_") and "cv2" in v:
 # 	    del os.environ[k]
 
-img = cv2.imread('/home/marilin/Documents/ESP/data/SYTO_PI/fibers_24h_growth_syto_PI_1-Image Export-07_c1-3.jpg')
+start_time = time.time()
+#img = cv2.imread('/home/marilin/Documents/ESP/data/SYTO_PI/fibers_24h_growth_syto_PI_1-Image Export-07_c1-3.jpg')
 #red_chan = cv2.imread("red_intensities.png",0)
 #red_chan = cv2.imread("red_intensities_03.png",0)
-# red_chan = cv2.imread("red_intensities_incub_4h_2.png",0)
+red_chan = cv2.resize(cv2.imread("red_intensities_incub_4h_2.png",0), (512,512))
 # #green_chan = cv2.imread("green_intensities.png",0)
 # #green_chan = cv2.imread("green_intensities_03.png",0)
-# green_chan = cv2.imread("green_intensities_incub_4h_2.png",0)
+green_chan =  cv2.resize(cv2.imread("green_intensities_incub_4h_2.png",0), (512,512))
 
 # # resizing to 512,512 - works_for_both() func dependency 
 # red_chan = cv2.resize(red_chan, (512,512))
 # green_chan = cv2.resize(green_chan, (512,512))
 
 
-(B,green_chan,red_chan) = cv2.split(img)
-img[:,:,1] = 0 
-img[:,:,1] = green_chan
-img[:,:,2] = 0 
-img[:,:,2] = red_chan
-cv2.imshow("green", img[:,:,1])
-cv2.imshow("red", img[:,:,2])
+# (B,green_chan,red_chan) = cv2.split(img)
+# img[:,:,1] = 0 
+# img[:,:,1] = green_chan
+# img[:,:,2] = 0 
+# img[:,:,2] = red_chan
+# cv2.imshow("green", img[:,:,1])
+# cv2.imshow("red", img[:,:,2])
 ## mean filter 
 
 ## red chan 
@@ -123,10 +124,11 @@ def works_for_both(data):
 # https://stackoverflow.com/questions/3684484/peak-detection-in-a-2d-array/3689710#3689710
 def peaker(data,ty):
     # define a disk shape - 4 for red channel, 3 for green channel
+    # possibly needs some scaling, depending on how much bacteria seemed to be gathered on the sample - whole image vs a quarter etc. 
     if ty == "green":
-        neighborhood = disk(3)
+        neighborhood = disk(7) # 3 - seems like ~4x less needs +4 size disk?
     elif ty == "red":
-        neighborhood = disk(4)
+        neighborhood = disk(8) # 4
 
     #apply the local maximum filter; all pixel of maximal value 
     #in their neighborhood are set to 1
@@ -163,7 +165,7 @@ labeled_array, num_features_r = label(peaker(*works_for_both(red_chan)))
 labeled_array, num_features_g = label(peaker(*works_for_both(green_chan)))
 
 print("greens: ", num_features_g, "reds: ", num_features_r)
-
+print("time it took: ", time.time()-start_time)
 ##
 
 ## mahotas testing - regional max functionality
@@ -216,7 +218,7 @@ print("greens: ", num_features_g, "reds: ", num_features_r)
 # slices = ndimage.find_objects(labeled)
 ##
 
-cv2.imshow("orig", img)
+#cv2.imshow("orig", img)
 # cv2.imshow("red_chan", red_chan)
 # # cv2.imshow("red_chan_mean", cl2)
 # # cv2.imshow("red_dilated", green_dilated)
