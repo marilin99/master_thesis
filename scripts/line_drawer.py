@@ -62,37 +62,37 @@ coords = []
 # collecting exceptions w x,y and "winners"
 exc_cases = []
 
-while True:
-     # choosing idx of white px - randint should be excluding high values
+# while True:
+#      # choosing idx of white px - randint should be excluding high values
      
-     rnd_idx = np.random.randint(0, (len(np.where(PATH_1 > 0)[0])), 1)
+#      rnd_idx = np.random.randint(0, (len(np.where(PATH_1 > 0)[0])), 1)
 
-     x, y = np.where(PATH_1 > 0)[0][rnd_idx][0], np.where(PATH_1 > 0)[1][rnd_idx][0]
+#      x, y = np.where(PATH_1 > 0)[0][rnd_idx][0], np.where(PATH_1 > 0)[1][rnd_idx][0]
 
-     # refacto this   (temp safety net: 34<x<h-y, 34 < y < w-y)
-     while not (n2 < x < (h-n2)) and (n2 < y < (w-n2) ):
-          rnd_idx = np.random.randint(0, (len(np.where(PATH_1 > 0)[0])), 1)
-          x, y = np.where(PATH_1 > 0)[0][rnd_idx][0], np.where(PATH_1 > 0)[1][rnd_idx][0]
+#      # refacto this   (temp safety net: 34<x<h-y, 34 < y < w-y)
+#      while not (n2 < x < (h-n2)) and (n2 < y < (w-n2) ):
+#           rnd_idx = np.random.randint(0, (len(np.where(PATH_1 > 0)[0])), 1)
+#           x, y = np.where(PATH_1 > 0)[0][rnd_idx][0], np.where(PATH_1 > 0)[1][rnd_idx][0]
 
 
-     # neighboring px-s from white should be black (U+L, U+R / B+L, B+R) but majority of kernel should be white
+#      # neighboring px-s from white should be black (U+L, U+R / B+L, B+R) but majority of kernel should be white
 
-     # relative to px pos
-     try:
-          U = PATH_1[x-1][y]
-          R = PATH_1[x][y+1]
-          L = PATH_1[x][y-1]
-          B = PATH_1[x+1][y]
-     # if too much in the border - find a better location 
-     except:
-          continue
+#      # relative to px pos
+#      try:
+#           U = PATH_1[x-1][y]
+#           R = PATH_1[x][y+1]
+#           L = PATH_1[x][y-1]
+#           B = PATH_1[x+1][y]
+#      # if too much in the border - find a better location 
+#      except:
+#           continue
 
-#      # safe check - exclusive or to avoid obscure situations or stick to or?
-     if (U == 0 and L == 0) ^ (U == 0 and R == 0) ^ (B == 0 and L == 0) ^ (B == 0 and R == 0):
-          coords.append((x,y))
+# #      # safe check - exclusive or to avoid obscure situations or stick to or?
+#      if (U == 0 and L == 0) ^ (U == 0 and R == 0) ^ (B == 0 and L == 0) ^ (B == 0 and R == 0):
+#           coords.append((x,y))
 
-     if len(coords) == 100:
-          break
+#      if len(coords) == 100:
+#           break
 
           # kernel edge length
           #n = 13
@@ -113,7 +113,8 @@ while True:
 # # saving dm-s in a list to show histogram in the end
 dm_s = []
 # # for understanding exceptions
-# coords = [(514,1010)]
+#coords = [(138,341), (470,352), (382, 315), (516, 827), (407, 564), (61, 344), (323, 531), (151, 576), (434, 690), (178,732), (284,155), (514,1010), (58,206), (561,996), (190,458), (478,689), (376,660), (159, 757), (465,522), (374,55)]
+coords = [(392,82)]
 for x,y in coords: 
 #x,y = 332, 695
      print(x,y)
@@ -190,7 +191,7 @@ for x,y in coords:
                
           elif 'LR' and 'LL' in winners:
                kernel_2 = thinned[ x : (x+n2), y-(n2//2) :y + (n2//2)]
-           
+               #print(kernel_2)
           elif 'UR' and 'UL' in winners:
                kernel_2 = thinned[ (x-n2) : x, y-(n2//2) :y + (n2//2)]
 
@@ -224,41 +225,42 @@ for x,y in coords:
                kernel_2 = PATH_1[x-(n2//2):x+(n2//2+1), y-(n2//2):y+(n2//2+1)]
 
 
-     #print(kernel_2)
+     print(kernel_2)
 
 
 
      # could include it in the function  - this computation is done to ensure that the end selection stays constant no matter the kernel size
      try:
-          x_new = x + abs(n2//2 - find_nearest_white(kernel_2, [n2//2,0])[0])
-          y_new = y + abs(0 - find_nearest_white(kernel_2, [n2//2,0])[1])
+          # quarter specific 
+          x_new = x + abs(n2//2 - find_nearest_white(kernel_2, [n2//2, 0])[0])
+          y_new = y + abs(0 - find_nearest_white(kernel_2, [n2//2, 0])[1])
           px_dist = dist[x_new][y_new]
      # # values of this image from scale_obtain.py 
           nano_per_px = 400 / 22
           dm = int(2 * px_dist * nano_per_px)
 
-          dm_s.append((x,y,x_new, y_new, dm))
+          dm_s.append((x, y, x_new, y_new, dm))
 
      except: 
           exc_cases.append((x,y, winners))
-          continue
+     #continue
 
 
 print("time taken:", time.time() - start_time)
 print(dm_s)
-print(exc_cases)
+#print(exc_cases)
 
 ## for analysis
 
-with open("dm_info.txt", "w+") as file:
-     for val in dm_s:
-          file.write(f"{val}")
-          file.write("\n")
+# with open("dm_info.txt", "w+") as file:
+#      for val in dm_s:
+#           file.write(f"{val}")
+#           file.write("\n")
      
-with open("exc_cases.txt", "w+") as file:
-     for val in exc_cases:
-          file.write(f"{val}")
-          file.write("\n")
+# with open("exc_cases.txt", "w+") as file:
+#      for val in exc_cases:
+#           file.write(f"{val}")
+#           file.write("\n")
 
 ############################################################
 # polynomial fitting - draw lines against the polynomial to find the most perpendicular one (once a pt is established - needs a tangent and angle between the drawn line and tangent )
@@ -352,13 +354,18 @@ with open("exc_cases.txt", "w+") as file:
 #cv2.polylines(thinned, [points], isClosed=False, color = (255,255,255), thickness = 1)
 #cv2.line(thinned, (695,332), (712,332), (255,255,255), 1)
 
-# thinned = skimage.morphology.medial_axis(PATH_1).astype(np.uint8)
-# thinned[thinned == 1] = 255
-# cv2.imshow("thinned", thinned.astype(np.uint8))
-# orig = cv2.circle(orig, (1010,514), radius=4, color=(0, 0, 255), thickness=-1)
+thinned = skimage.morphology.medial_axis(PATH_1).astype(np.uint8)
+thinned[thinned == 1] = 255
+
+orig = cv2.circle(orig, (y,x), radius=4, color=(0, 0, 255), thickness=-1)
+orig = cv2.circle(orig, (y_new,x_new), radius=4, color=(255, 255, 255), thickness=-1)
+
+thinned = cv2.circle(thinned, (y,x), radius=4, color=(255, 255, 255), thickness=-1)
+thinned = cv2.circle(thinned, (y_new,x_new), radius=4, color=(255, 255, 255), thickness=-1)
 # # # #print(np.count_nonzero(PATH_1))
 # # # #cv2.imshow("direction", theta)
 # # # cv2.imshow("thresh", PATH_1)
-# cv2.imshow("orig", orig)
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
+cv2.imshow("thinned", thinned.astype(np.uint8))
+cv2.imshow("orig", orig)
+cv2.waitKey(0)
+cv2.destroyAllWindows()

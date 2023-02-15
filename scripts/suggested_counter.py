@@ -112,10 +112,10 @@ def works_for_both(data):
     elif 'r' in argname("data"):
         ty = "red"
 
-    # cv2.imshow("data", data)
-    # cv2.imshow("normalized", cl2)
-    # cv2.imshow("dilated", dilated)
-    # cv2.imshow("thresholded", thresh)
+    cv2.imshow("data", data)
+    cv2.imshow("normalized", cl2)
+    cv2.imshow("dilated", dilated)
+    cv2.imshow("thresholded", thresh)
 
     return thresh, ty
 
@@ -219,7 +219,7 @@ print("time it took: ", time.time()-start_time)
 ##
 
 #cv2.imshow("orig", img)
-# cv2.imshow("red_chan", red_chan)
+cv2.imshow("red_chan", red_chan)
 # # cv2.imshow("red_chan_mean", cl2)
 # # cv2.imshow("red_dilated", green_dilated)
 # # cv2.imshow("red_thresh", thresh_g)
