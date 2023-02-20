@@ -124,11 +124,11 @@ def works_for_both(data):
 # https://stackoverflow.com/questions/3684484/peak-detection-in-a-2d-array/3689710#3689710
 def peaker(data,ty):
     # define a disk shape - 4 for red channel, 3 for green channel
-    # possibly needs some scaling, depending on how much bacteria seemed to be gathered on the sample - whole image vs a quarter etc. 
+    # possibly needs some scaling, depending on resolution? - the bigger the reso, the more the disk size
     if ty == "green":
-        neighborhood = disk(7) # 3 - seems like ~4x less needs +4 size disk?
+        neighborhood = disk(7) # 3 w 512x512 - seems like ~4x less needs +4 size disk?
     elif ty == "red":
-        neighborhood = disk(8) # 4
+        neighborhood = disk(8) # 4 w 512x512 - w 1024 would need +4 size disk 
 
     #apply the local maximum filter; all pixel of maximal value 
     #in their neighborhood are set to 1

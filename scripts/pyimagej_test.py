@@ -50,8 +50,52 @@ imp.setTitle("imp_fib")
 
 #print(imp.getAllStatistics())
 
-# huang thresholding from imagejops
-#thuang = ij.op().threshold().huang(image)
+#huang thresholding from imagejops
+#ij.op().threshold().huang(image)
+
+#HyperSphereShape = sj.jimport("net.imglib2.algorithm.neighborhood.CenteredRectangleShape")
+
+ij.IJ.run(imp, "Kuwahara Filter", "sampling=8") # Look ma, a Fiji plugin!
+#ij.IJ.run(imp, "Statistical Region Merging", "q=12 showaverages")
+#ij.IJ.run(imp, "8-bit")
+mask = ij.op().run("threshold.huang", imp)
+
+# ij.IJ.run(imp, "Remove Outliers...", "radius=3 threshold=50 which=Dark")
+# ij.IJ.run(imp, "Remove Outliers...", "radius=3 threshold=50 which=Bright")
+# ij.IJ.run(imp, "Remove Outliers...", "radius=3 threshold=50 which=Dark")
+# ij.IJ.run(imp, "Remove Outliers...", "radius=3 threshold=50 which=Bright")
+
+# ij.IJ.run(imp, "Erode")
+# ij.IJ.run(imp, "Dilate")
+
+#mask = ij.op().run("")
+#mask = ij.op().run("morphology.fillHoles", mask)
+ij.py.show(mask, "gray")
+
+
+
+#ij.op().threshold().huang(imp)
+
+# Prefs = sj.jimport('ij.Prefs')
+# Prefs.blackBackground = False
+# ij.IJ.setAutoThreshold(imp, "Otsu dark")
+# mask = ij.to_imageplus()("cells-mask", imp.createThresholdMask())
+# ij.IJ.run(imp, "Close", "")
+# ij.py.show(mask)
+
+#ij.py.show(imp, "gray")
+
+
+# get numpy version of object 
+# np_thuang = ij.py.from_java(thuang)
+
+# print((np_thuang).shape)
+
+
+#ij.py.run_macro("""run("Erode");""")
+
+#ij.py.show(image, "gray")
+
 
 # uses pyplot for showing
 # huang thresholding from imagejops
@@ -68,9 +112,9 @@ imp.setTitle("imp_fib")
 
 #print("hey" if ij.ui().isHeadless() else "ney")
 
-plugin = 'DiameterJ'
-ij.py.run_plugin(plugin,)
+# plugin = 'DiameterJ'
+# ij.py.run_plugin(plugin,)
 
 
-result = ij.WindowManager.getCurrentImage()
-ij.py.show(result)
+# result = ij.WindowManager.getCurrentImage()
+# ij.py.show(result)

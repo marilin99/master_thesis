@@ -66,13 +66,14 @@ coords = []
 # collecting exceptions w x,y and "winners"
 exc_cases = []
 
-def point_picker():
+def point_picker(n2):
      while True:
+          rnd_idx = np.random.randint(0, (len(np.where(PATH_1 > 0)[0])), 1)
+          x, y = np.where(PATH_1 > 0)[0][rnd_idx][0], np.where(PATH_1 > 0)[1][rnd_idx][0]
+
+          
           #choosing idx of white px - randint should be excluding high values
           
-          rnd_idx = np.random.randint(0, (len(np.where(PATH_1 > 0)[0])), 1)
-
-          x, y = np.where(PATH_1 > 0)[0][rnd_idx][0], np.where(PATH_1 > 0)[1][rnd_idx][0]
 
           # refacto this   (temp safety net: 34<x<h-y, 34 < y < w-y)
           # while not (n2 < x < (h-n2)) and (n2 < y < (w-n2) ):
@@ -100,6 +101,7 @@ def point_picker():
           # amount of points chosen
           if len(coords) == 100:
                break
+          
 
      return coords
 
@@ -213,25 +215,30 @@ def dm_finder(pt_s, n,n2,thinned):
 
                          if n2 == int(np.ceil(np.max(dist))):
                               kernel_2 = thinned[ x-(n2//2): x+(n2//2 ), y:(y+n2)]
-
                               # function input origin is quarter specific 
                               x_new = x + (find_nearest_white(kernel_2, [n2//2, 0])[0] - n2//2)
                               y_new = y + find_nearest_white(kernel_2, [n2//2, 0])[1]
 
                          else:
                               n3 = int(np.ceil(np.max(dist)))
+
+                              # upper layer - upper right corner or upper middle 
                               if ((y-n3) < 0 and (x-n3) < 0) or ((x-n3) < 0):
-
                                    kernel_2 = thinned[ : (n2+n2//2), y : y+n3]
-
                                    x_new = x + (find_nearest_white(kernel_2, [n2, 0])[0] - n2)
-
                                    y_new = y + find_nearest_white(kernel_2, [n2, 0])[1] 
-                              
-                              elif ((x+n2) > h and (y-n3) < 0) or ( (x+n2) > h):
 
-                                   kernel_2 = thinned[ : (n2+n2//2), y : y+n3]
+                              # lower layer - middle lower of lower left corner 
+                              elif ((x+n2) > h and (y-n3) < 0) or ( (x+n2) > h):
+                                   kernel_2 = thinned[h-(n2+n2//2):, y : y+n3]
+                                   x_new = x + (find_nearest_white(kernel_2, [n2//2, 0])[0] - n2//2)
+                                   y_new = y + find_nearest_white(kernel_2, [n2//2, 0])[1] 
                               
+                              # towards left middle edge 
+                              elif y-n3 <0: 
+                                   kernel_2 = thinned[ x-(n2//2): x+(n2//2 ), y:(y+n3)]
+                                   x_new = x + (find_nearest_white(kernel_2, [n2//2, 0])[0] - n2//2)
+                                   y_new = y + find_nearest_white(kernel_2, [n2//2, 0])[1]
 
 
 
@@ -336,8 +343,8 @@ def dm_finder(pt_s, n,n2,thinned):
 
           #print(kernel_2)
 
-#pt_s = point_picker()
-pt_s = [(642, 611), (12, 951), (265, 3), (6, 825), (648, 960)]
+pt_s = point_picker(n2)
+#pt_s = [(642, 611), (12, 951), (265, 3), (6, 825), (648, 960)]
 #pt_s = [(392, 82), (601, 781), (467, 543), (606, 203), (124, 920), (639, 995), (480, 552), (23, 824), (522, 630), (550, 442), (410, 188), (388, 282), (626, 420), (344, 837), (126, 919), (369, 248), (59, 920), (392, 153), (311, 416), (620, 216), (42, 887), (435, 431), (245, 1003), (205, 183), (52, 831), (47, 841), (578, 785), (190, 47), (397, 47), (115, 476), (249, 670), (125, 1006), (517, 428), (45, 846), (550, 76), (109, 139), (453, 912), (178, 418), (146, 879), (492, 677), (127, 322), (479, 830), (179, 246), (537, 528), (514, 828), (503, 753), (46, 103), (161, 953), (549, 155), (297, 271), (253, 635), (325, 743), (138, 341), (171, 140), (135, 347), (369, 459), (492, 885), (406, 306), (259, 7), (470, 352), (382, 315), (516, 827), (150, 111), (407, 564), (42, 1014), (349, 775), (285, 413), (31, 228), (178, 953), (516, 377), (584, 276), (501, 812), (105, 678), (491, 8), (122, 467), (61, 344), (204, 416), (503, 985), (10, 365), (454, 311), (52, 831), (143, 285), (611, 684), (161, 754), (640, 941), (581, 164), (51, 811), (490, 211), (323, 531), (270, 1020), (151, 576), (465, 860), (434, 690), (178, 732), (284, 155), (514, 1010), (188, 178), (58, 206), (454, 810), (561, 996)]
 #print(pt_s)
 first_dm_s, first_excs = dm_finder(pt_s, n,n2,thinned)[0], dm_finder(pt_s, n,n2,thinned)[1]
