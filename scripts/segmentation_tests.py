@@ -11,8 +11,8 @@ from skimage.util import img_as_float
 #img = '/home/marilin/Documents/ESP/data/SYTO_PI/control_50killed_syto_PI_2-Image Export-02_c1-3.jpg'
 img = "/home/marilin/Documents/ESP/data/SEM/EcN_II_PEO_131120_GML_15k_01.tif"
 
-sample_image = cv2.imread(img)
-img = cv2.cvtColor(sample_image,cv2.COLOR_BGR2HSV)
+data = cv2.imread(img, 0)[:650, :]
+#img = cv2.cvtColor(sample_image,cv2.COLOR_BGR2HSV)
 
 # ### k means segmentation 
 # # 3d to 2d
@@ -62,65 +62,88 @@ img = cv2.cvtColor(sample_image,cv2.COLOR_BGR2HSV)
 ### rag skimage
 # https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_rag_merge.html#sphx-glr-auto-examples-segmentation-plot-rag-merge-py
 
-def _weight_mean_color(graph, src, dst, n):
-    """Callback to handle merging nodes by recomputing mean color.
+# def _weight_mean_color(graph, src, dst, n):
+#     """Callback to handle merging nodes by recomputing mean color.
 
-    The method expects that the mean color of `dst` is already computed.
+#     The method expects that the mean color of `dst` is already computed.
 
-    Parameters
-    ----------
-    graph : RAG
-        The graph under consideration.
-    src, dst : int
-        The vertices in `graph` to be merged.
-    n : int
-        A neighbor of `src` or `dst` or both.
+#     Parameters
+#     ----------
+#     graph : RAG
+#         The graph under consideration.
+#     src, dst : int
+#         The vertices in `graph` to be merged.
+#     n : int
+#         A neighbor of `src` or `dst` or both.
 
-    Returns
-    -------
-    data : dict
-        A dictionary with the `"weight"` attribute set as the absolute
-        difference of the mean color between node `dst` and `n`.
-    """
+#     Returns
+#     -------
+#     data : dict
+#         A dictionary with the `"weight"` attribute set as the absolute
+#         difference of the mean color between node `dst` and `n`.
+#     """
 
-    diff = graph.nodes[dst]['mean color'] - graph.nodes[n]['mean color']
-    diff = np.linalg.norm(diff)
-    return {'weight': diff}
+#     diff = graph.nodes[dst]['mean color'] - graph.nodes[n]['mean color']
+#     diff = np.linalg.norm(diff)
+#     return {'weight': diff}
 
 
-def merge_mean_color(graph, src, dst):
-    """Callback called before merging two nodes of a mean color distance graph.
+# def merge_mean_color(graph, src, dst):
+#     """Callback called before merging two nodes of a mean color distance graph.
 
-    This method computes the mean color of `dst`.
+#     This method computes the mean color of `dst`.
 
-    Parameters
-    ----------
-    graph : RAG
-        The graph under consideration.
-    src, dst : int
-        The vertices in `graph` to be merged.
-    """
-    graph.nodes[dst]['total color'] += graph.nodes[src]['total color']
-    graph.nodes[dst]['pixel count'] += graph.nodes[src]['pixel count']
-    graph.nodes[dst]['mean color'] = (graph.nodes[dst]['total color'] /
-                                      graph.nodes[dst]['pixel count'])
+#     Parameters
+#     ----------
+#     graph : RAG
+#         The graph under consideration.
+#     src, dst : int
+#         The vertices in `graph` to be merged.
+#     """
+#     graph.nodes[dst]['total color'] += graph.nodes[src]['total color']
+#     graph.nodes[dst]['pixel count'] += graph.nodes[src]['pixel count']
+#     graph.nodes[dst]['mean color'] = (graph.nodes[dst]['total color'] /
+#                                       graph.nodes[dst]['pixel count'])
 
-# nr of area based
-labels = segmentation.slic(sample_image, compactness=30,n_segments=100,start_label=1)
-g = graph.rag_mean_color(sample_image, labels)
-labels2 = graph.merge_hierarchical(labels, g, thresh=40, rag_copy=False,
-                                   in_place_merge=True,
-                                   merge_func=merge_mean_color,
-                                   weight_func=_weight_mean_color)
+# # nr of area based
+# labels = segmentation.slic(sample_image, compactness=30,n_segments=100,start_label=1)
+# g = graph.rag_mean_color(sample_image, labels)
+# labels2 = graph.merge_hierarchical(labels, g, thresh=40, rag_copy=False,
+#                                    in_place_merge=True,
+#                                    merge_func=merge_mean_color,
+#                                    weight_func=_weight_mean_color)
 
-out = color.label2rgb(labels2, sample_image, kind='avg', bg_label=0)
-result = segmentation.mark_boundaries(out, labels2, (0, 0, 0)) 
+# out = color.label2rgb(labels2, sample_image, kind='avg', bg_label=0)
+# result = segmentation.mark_boundaries(out, labels2, (0, 0, 0)) 
 
 # gray scale value based?
 
 
+import cv2 
 
-cv2.imshow('result', np.uint8(result))
-cv2.imshow('original', sample_image)
+
+clahe2 = cv2.createCLAHE(clipLimit=1, tileGridSize=(20,20))
+cl2 = clahe2.apply(data)
+
+
+#blur = cv2.GaussianBlur(cl2, (0,0), sigmaX=10, sigmaY=10)
+
+#dilated = cv2.dilate(cl2, (3,3))
+# divide
+#divide = cv2.divide(data, blur, scale=150)
+
+#edged = cv2.Canny(cl2, 140, 250)
+#_, thresh_g = cv2.threshold(green_dilated, 40, 255,cv2.THRESH_TOZERO)
+#_, thresh = cv2.threshold(divide, 0, 255, cv2.THRESH_TOZERO+cv2.THRESH_OTSU)
+
+
+_, thresh = cv2.threshold(cl2, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
+morph = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+
+
+
+cv2.imshow('result', np.uint8(morph))
+cv2.imshow('original', data)
 cv2.waitKey(0)
 cv2.destroyAllWindows()

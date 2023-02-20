@@ -229,7 +229,7 @@ def dm_finder(pt_s, n,n2,thinned):
                                    y_new = y + find_nearest_white(kernel_2, [n2, 0])[1] 
 
                               # lower layer - middle lower of lower left corner 
-                              elif ((x+n2) > h and (y-n3) < 0) or ( (x+n2) > h):
+                              elif ((x+n3) > h and (y-n3) < 0) or ( (x+n3) > h):
                                    kernel_2 = thinned[h-(n2+n2//2):, y : y+n3]
                                    x_new = x + (find_nearest_white(kernel_2, [n2//2, 0])[0] - n2//2)
                                    y_new = y + find_nearest_white(kernel_2, [n2//2, 0])[1] 
@@ -243,18 +243,63 @@ def dm_finder(pt_s, n,n2,thinned):
 
 
                     elif 'UL' and 'LL' in winners:
-                         kernel_2 = thinned[ x-(n2//2) : x+(n2//2), (y-n2):y]
 
-                         x_new = x + (find_nearest_white(kernel_2, [n2//2, n2])[0] - n2//2)
-                         y_new = y + (find_nearest_white(kernel_2, [n2//2, n2])[1] - n2)
+                         if n2 == int(np.ceil(np.max(dist))):
+                              kernel_2 = thinned[ x-(n2//2) : x+(n2//2), (y-n2):y]
+
+                              x_new = x + (find_nearest_white(kernel_2, [n2//2, n2])[0] - n2//2)
+                              y_new = y + (find_nearest_white(kernel_2, [n2//2, n2])[1] - n2)
+                         
+                         else:
+                              n3 = int(np.ceil(np.max(dist)))
+
+                              # upper layer - upper right corner or upper middle 
+                              if ((y-n3) < 0 and (x-n3) < 0) or ((x-n3) < 0) or ( (x-n3) <0 and (y+n3) >w ):
+                                   try:
+                                        # for corner case
+                                        kernel_2 = thinned[ : (n2+n2//2), y : y-n2]
+                                        x_new = x + (find_nearest_white(kernel_2, [n2, n2])[0] - n2)
+                                        y_new = y + (find_nearest_white(kernel_2, [n2, n2])[1] - n2)
+
+                                   except: 
+                                        kernel_2 = thinned[ : (n2+n2//2), y : y-n3]
+                                        x_new = x + (find_nearest_white(kernel_2, [n2, n3])[0] - n2)
+                                        y_new = y + (find_nearest_white(kernel_2, [n2, n3])[1] - n3)
+
+
+                              # middle right layer  
+                              elif ( (y+n3) > w):
+
+                                   kernel_2 = thinned[ x-(n3//2) : x+(n3//2), (y-n3):y]
+
+                                   x_new = x + (find_nearest_white(kernel_2, [n3//2, n3])[0] - n3//2)
+                                   y_new = y + (find_nearest_white(kernel_2, [n3//2, n3])[1] - n3)
+                              
+                              # lower right corner and middle layer 
+
+                              elif ( (y+n3) > w and (x+n3)>h) or ((x+n3)>h):
+
+                                   kernel_2 = thinned[h-(n2+n2//2):, y : y+n3]
+
+                                   x_new = x + (find_nearest_white(kernel_2, [n2//2, n3])[0] - n2//2)
+                                   y_new = y + (find_nearest_white(kernel_2, [n2//2, n3])[1] - n3)
+
+                              
+                              elif ( (y-n3) < 0 and (x+n3)>h) or ((y-n3) < 0):
+
+                                   kernel_2 = thinned[x-(n2//2) : x+(n2//2), :y]
+
+                                   x_new = x + (find_nearest_white(kernel_2, [n2//2, n2])[0] - n2//2)
+                                   y_new = y + (find_nearest_white(kernel_2, [n2//2, n2])[1] - n2)
+
                          
                     elif 'LR' and 'LL' in winners:
                          kernel_2 = thinned[ x : (x+n2), y-(n2//2) :y + (n2//2)]
 
-               
-
                          x_new = x + find_nearest_white(kernel_2, [0, n2//2])[0] 
                          y_new = y + (find_nearest_white(kernel_2, [0, n2//2])[1] - n2//2)
+
+                         
 
                     elif 'UR' and 'UL' in winners:
                          kernel_2 = thinned[ (x-n2) : x, y-(n2//2) :y + (n2//2)]
@@ -336,15 +381,15 @@ def dm_finder(pt_s, n,n2,thinned):
           except: 
                # cases where kernel_2 only has 0-s need to probably create long slits along a specific edge :))
                # re-running the exceptions - get rids of most of them - for some reason unknown
-               #exc_cases.append((x,y, winners))
-               exc_cases.append((x,y))
+               exc_cases.append((x,y, winners))
+               #exc_cases.append((x,y))
 
      return (dm_s, exc_cases)
 
           #print(kernel_2)
 
-pt_s = point_picker(n2)
-#pt_s = [(642, 611), (12, 951), (265, 3), (6, 825), (648, 960)]
+#pt_s = point_picker(n2)
+pt_s = [(642, 611), (12, 951), (265, 3), (6, 825), (648, 960)]
 #pt_s = [(392, 82), (601, 781), (467, 543), (606, 203), (124, 920), (639, 995), (480, 552), (23, 824), (522, 630), (550, 442), (410, 188), (388, 282), (626, 420), (344, 837), (126, 919), (369, 248), (59, 920), (392, 153), (311, 416), (620, 216), (42, 887), (435, 431), (245, 1003), (205, 183), (52, 831), (47, 841), (578, 785), (190, 47), (397, 47), (115, 476), (249, 670), (125, 1006), (517, 428), (45, 846), (550, 76), (109, 139), (453, 912), (178, 418), (146, 879), (492, 677), (127, 322), (479, 830), (179, 246), (537, 528), (514, 828), (503, 753), (46, 103), (161, 953), (549, 155), (297, 271), (253, 635), (325, 743), (138, 341), (171, 140), (135, 347), (369, 459), (492, 885), (406, 306), (259, 7), (470, 352), (382, 315), (516, 827), (150, 111), (407, 564), (42, 1014), (349, 775), (285, 413), (31, 228), (178, 953), (516, 377), (584, 276), (501, 812), (105, 678), (491, 8), (122, 467), (61, 344), (204, 416), (503, 985), (10, 365), (454, 311), (52, 831), (143, 285), (611, 684), (161, 754), (640, 941), (581, 164), (51, 811), (490, 211), (323, 531), (270, 1020), (151, 576), (465, 860), (434, 690), (178, 732), (284, 155), (514, 1010), (188, 178), (58, 206), (454, 810), (561, 996)]
 #print(pt_s)
 first_dm_s, first_excs = dm_finder(pt_s, n,n2,thinned)[0], dm_finder(pt_s, n,n2,thinned)[1]

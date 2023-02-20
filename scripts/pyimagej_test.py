@@ -13,11 +13,12 @@ for k, v in os.environ.items():
 
 # https://pyimagej.readthedocs.io/en/latest/Initialization.html
 PATH_1 = "/home/marilin/Documents/ESP/data/SEM/EcN_II_PEO_131120_GML_15k_01.tif"
-plugins_dir = '/home/marilin/Documents/ESP/diameterJ_test/ImageJ/plugins'
+plugins_dir = '/home/marilin/Documents/ESP/diameterJ_test/ImageJ/plugins/DiameterJ/'
 
 sj.config.add_option(f'-Dplugins.dir={plugins_dir}')
-ij = imagej.init('sc.fiji:fiji')
 
+ij = imagej.init('sc.fiji:fiji')
+#ij = imagej.init()
 
 # load a sample image
 image = ij.io().open(PATH_1)
@@ -55,10 +56,18 @@ imp.setTitle("imp_fib")
 
 #HyperSphereShape = sj.jimport("net.imglib2.algorithm.neighborhood.CenteredRectangleShape")
 
-ij.IJ.run(imp, "Kuwahara Filter", "sampling=8") # Look ma, a Fiji plugin!
-#ij.IJ.run(imp, "Statistical Region Merging", "q=12 showaverages")
-#ij.IJ.run(imp, "8-bit")
-mask = ij.op().run("threshold.huang", imp)
+#ij.IJ.run(imp, "Kuwahara Filter", "sampling=1") # Look ma, a Fiji plugin!
+# #ij.IJ.run(imp, "Statistical Region Merging", "q=12 showaverages")
+# #ij.IJ.run(imp, "8-bit")
+#mask = ij.op().run("threshold.shanbhag", imp)
+
+# macro.jim recorded from imagej
+# macro = """
+
+# """
+# py recorded from imagej tool 
+# #ij.IJ.run(imp, "DiameterJ Segment", "do=Yes image=1024 image_0=768 top=0 top_0=0 bottom=1024 bottom_0=650 stat. do_0=No choose=/home/marilin/Documents/ESP/diameterJ_test/sem_test")
+
 
 # ij.IJ.run(imp, "Remove Outliers...", "radius=3 threshold=50 which=Dark")
 # ij.IJ.run(imp, "Remove Outliers...", "radius=3 threshold=50 which=Bright")
@@ -112,9 +121,30 @@ ij.py.show(mask, "gray")
 
 #print("hey" if ij.ui().isHeadless() else "ney")
 
-# plugin = 'DiameterJ'
-# ij.py.run_plugin(plugin,)
+# plugin = "DiameterJ Segment"
+# ij.py.run_plugin(plugin, {"do":"Yes", "image":1024, "image_0":768, "top":0, "top_0":0, "bottom":1024, "bottom_0":650, "stat. do_0":"No", "choose":"/home/marilin/Documents/ESP/diameterJ_test/sem_test"}, imp = imp)
 
+
+# import imageio
+# import imagej
+
+# # Start ImageJ
+# ij = imagej.init('1.5.3')
+
+# # Load image
+# image = imageio.imread(PATH_1)
+
+# # Convert image to 8-bit
+# image = (image / image.max() * 255).astype('uint8')
+
+# # Run DiameterJ macro
+# macro = """
+# run("DiameterJ Segment ", "do=Yes image=1024 image_0=768 top=0 top_0=0 bottom=1024 bottom_0=650 stat. do_0=No choose=/home/marilin/Documents/ESP/diameterJ_test/sem_test");
+# """
+# ij.py.run_macro(macro, {'Image': image})
+
+# # Stop ImageJ
+# ij.exit()
 
 # result = ij.WindowManager.getCurrentImage()
 # ij.py.show(result)

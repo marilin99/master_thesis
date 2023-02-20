@@ -124,7 +124,7 @@ def works_for_both(data):
 # https://stackoverflow.com/questions/3684484/peak-detection-in-a-2d-array/3689710#3689710
 def peaker(data,ty):
     # define a disk shape - 4 for red channel, 3 for green channel
-    # possibly needs some scaling, depending on resolution? - the bigger the reso, the more the disk size
+    # possibly needs some scaling, depending on resolution? - the bigger the initial reso, the more the disk size
     if ty == "green":
         neighborhood = disk(7) # 3 w 512x512 - seems like ~4x less needs +4 size disk?
     elif ty == "red":
