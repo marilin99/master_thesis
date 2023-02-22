@@ -655,46 +655,32 @@ def dm_finder(pt_s, n,n2,thinned):
                              
                               kernel_2 = thinned[x-(n2//2) : x+n2, y-(n2//2):y+n2]
 
-                              x_new = x + (find_nearest_white(kernel_2, [n2//2, n2//2])[0] - n2//2)
-                              y_new = y + (find_nearest_white(kernel_2, [n2//2, n2//2])[1] - n2//2)
-
 
                          else:
                               n3 = int(np.ceil(np.max(dist)))
 
                               # upper left corner or mid left or upper mid 
                               if ((x-n3<0) and (y-n3<0)) or (x-n3<0) or (y-n3<0):
-                                   
-                                   kernel_2 = thinned[x-n2: x+n3, y-n2:y+n3]
-
-                                   x_new = x + (find_nearest_white(kernel_2, [n2, n2])[0] - n2)
-                                   y_new = y + (find_nearest_white(kernel_2, [n2, n2])[1] - n2)
+                                   kernel_2 = thinned[x-(n2//2): x+n3, y-(n2//2):y+n3]
 
                               # lower right corner
                               elif ( (y+n3>w) and (x+n3>h) ):
-                                   kernel_2 = thinned[x-n2:, y-n2:]
+                                   kernel_2 = thinned[x-(n2//2):, y-(n2//2):]
 
-                                   x_new = x + (find_nearest_white(kernel_2, [n2, n2])[0] - n2)
-                                   y_new = y + (find_nearest_white(kernel_2, [n2, n2])[1] - n2)
 
                               # upper right corner or mid right
                               elif ((x-n3<0) and (y+n3>w)) or  (y+n3>w):
-                                   kernel_2 = thinned[x-n2:x+n3, y-n2:]
+                                   kernel_2 = thinned[x-(n2//2):x+n3, y-(n2//2):]
 
-                                   x_new = x + (find_nearest_white(kernel_2, [n2, n2])[0] - n2)
-                                   y_new = y + (find_nearest_white(kernel_2, [n2, n2])[1] - n2)
 
                               # low mid or lower left corner
                               elif (x+n3>h) or ((x+n3>h) and (y-n3<0)):
+                                   kernel_2 = thinned[x-(n2//2):, y-(n2//2):y+n3]
 
-                                   kernel_2 = thinned[x-n2:, y-n2:y+n3]
 
-                                   x_new = x + (find_nearest_white(kernel_2, [n2, n2])[0] - n2)
-                                   y_new = y + (find_nearest_white(kernel_2, [n2, n2])[1] - n2)
+                         x_new = x + (find_nearest_white(kernel_2, [n2//2, n2//2])[0] - n2//2)
+                         y_new = y + (find_nearest_white(kernel_2, [n2//2, n2//2])[1] - n2//2)
                                                                  
-
-                              
-
 
 
                
@@ -717,8 +703,8 @@ def dm_finder(pt_s, n,n2,thinned):
           #print(kernel_2)
 
 #pt_s = point_picker(n2)
-#pt_s = [(5, 1005), (616, 1021), (7, 713), (31, 965), (576, 6), (578, 5), (397, 13), (6, 854), (4, 291), (200, 3), (644, 257), (8, 293), (27, 936), (32, 546), (6, 854), (17, 316), (643, 589), (15, 113), (461, 4)]
-pt_s = [(616,1021)]
+pt_s = [(5, 1005), (616, 1021), (7, 713), (31, 965), (576, 6), (578, 5), (397, 13), (6, 854), (4, 291), (200, 3), (644, 257), (8, 293), (27, 936), (32, 546), (6, 854), (17, 316), (643, 589), (15, 113), (461, 4)]
+#pt_s = [(616,1021)]
 # #print(pt_s)
 first_dm_s, first_excs = dm_finder(pt_s, n,n2,thinned)[0], dm_finder(pt_s, n,n2,thinned)[1]
 
