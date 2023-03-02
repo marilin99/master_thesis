@@ -97,11 +97,11 @@ def point_picker(n2):
           if (U == 0 and L == 0) ^ (U == 0 and R == 0) ^ (B == 0 and L == 0) ^ (B == 0 and R == 0):
           #if (U == 0 and L == 0) or (U == 0 and R == 0) or (B == 0 and L == 0) or (B == 0 and R == 0):
           # uniqueness (was one pair at 1000 points)
-               if (x,y) not in coords:
-                    coords.append((x,y))
+               # if (x,y) not in coords:
+               coords.append((x,y))
 
           # amount of points chosen
-          if len(coords) == 1000:
+          if len(coords) == 500:
                break
           
 
@@ -163,6 +163,7 @@ def dm_finder(pt_s, n,n2,thinned):
      # # # 4 diagonals possible - the quarter with the most whites wins?
 
      # ### direction choosing ###
+          n = 13
           if (y+n) > w or (x+n) > h or (y-n) < 0 or (x-n) < 0:
                n = np.min((abs(0-x), (h-x), (w-y), abs(0-y)))
           
@@ -174,6 +175,7 @@ def dm_finder(pt_s, n,n2,thinned):
           UR = np.sum(kernel_1[:n//2, n//2+1:])
           LL = np.sum(kernel_1[n//2+1:, :n//2])
           LR = np.sum(kernel_1[n//2+1:, n//2+1:])
+
 
           # returning strings of quarter 
           quarters = np.array(["UL", "UR", "LL", "LR"])
@@ -688,7 +690,7 @@ def dm_finder(pt_s, n,n2,thinned):
                # values of this image from scale_obtain.py 
                nano_per_px = 400 / 22
                dm = int(2 * px_dist * nano_per_px)
-               #dm_s.append((x, y, x_new, y_new, dm))
+               #dm_s.append((x, y, x_new, y_new, dm, winners))
                dm_s.append(dm)
                     
                
@@ -702,20 +704,20 @@ def dm_finder(pt_s, n,n2,thinned):
 
           #print(kernel_2)
 
-#pt_s = point_picker(n2)
-pt_s = [(5, 1005), (616, 1021), (7, 713), (31, 965), (576, 6), (578, 5), (397, 13), (6, 854), (4, 291), (200, 3), (644, 257), (8, 293), (27, 936), (32, 546), (6, 854), (17, 316), (643, 589), (15, 113), (461, 4)]
-#pt_s = [(616,1021)]
+pt_s = point_picker(n2)
+#pt_s = [(5, 1005), (616, 1021), (7, 713), (31, 965), (576, 6), (578, 5), (397, 13), (6, 854), (4, 291), (200, 3), (644, 257), (8, 293), (27, 936), (32, 546), (6, 854), (17, 316), (643, 589), (15, 113), (461, 4)]
+#pt_s = [(545,1)]
 # #print(pt_s)
 first_dm_s, first_excs = dm_finder(pt_s, n,n2,thinned)[0], dm_finder(pt_s, n,n2,thinned)[1]
-
-print(first_excs)
-print(first_dm_s)
+#first_dm_s = []
+# print(first_excs)
+# print(first_dm_s)
 #print("length_of_first_dm-s: ", len(first_dm_s))
-leftovers = []
-for val in first_excs:
-     second_dm_s, second_excs = dm_finder([val], n,n2,thinned)[0], dm_finder([val], n,n2,thinned)[1]
-     if len(second_dm_s) > 0: first_dm_s.append(*second_dm_s)
-     elif len(second_excs) > 0: leftovers.append(*second_excs)
+# leftovers = []
+# for val in pt_s:
+#      second_dm_s, second_excs = dm_finder([val], n,n2,thinned)[0], dm_finder([val], n,n2,thinned)[1]
+#      if len(second_dm_s) > 0: first_dm_s.append(*second_dm_s)
+#      elif len(second_excs) > 0: leftovers.append(*second_excs)
      # print("second round of dm-s ", second_dm_s)
      # print("second round of excs ", second_excs)
 
@@ -737,21 +739,22 @@ for val in first_excs:
      # could include it in the function  - this computation is done to ensure that the end selection stays constant no matter the kernel size
      #continue
 
+print(first_dm_s)
 #print(len(first_dm_s))
-print(leftovers)
+#print(leftovers)
 print("time taken:", time.time() - start_time)
 
 # histogram creating
-# import os 
-# for k, v in os.environ.items():
-# 	if k.startswith("QT_") and "cv2" in v:
-# 	    del os.environ[k]
+import os 
+for k, v in os.environ.items():
+	if k.startswith("QT_") and "cv2" in v:
+	    del os.environ[k]
 
-# plt.hist(first_dm_s)
-# plt.title("Fiber diameter measurements (n=100)")
-# plt.ylabel("Frequency")
-# plt.xlabel("Fiber diameter (nm)")
-# plt.show()
+plt.hist(first_dm_s)
+plt.title("Fiber diameter measurements (n=100)")
+plt.ylabel("Frequency")
+plt.xlabel("Fiber diameter (nm)")
+plt.show()
 
 ## for analysis
 

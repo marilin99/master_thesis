@@ -118,12 +118,21 @@ data = cv2.imread(img, 0)[:650, :]
 
 # gray scale value based?
 
-
+### fiber segmentation tests ###
 import cv2 
 
+# following methodology from https://pubs.acs.org/doi/pdf/10.1021/ie901179m
 
-clahe2 = cv2.createCLAHE(clipLimit=1, tileGridSize=(20,20))
+# local normalization 
+clahe2 = cv2.createCLAHE(tileGridSize=(20,20), clipLimit=1) #clipLimit=1, 
 cl2 = clahe2.apply(data)
+
+# image denoising - wavelet filter daubechies (used for texture/surface/denoising) - 8 scaling coeff, M = 2,
+import mahotas as mh
+t = mh.daubechies(cl2, 'D2', inline=False)
+
+end_im = cl2-t
+# multiway pca 
 
 
 #blur = cv2.GaussianBlur(cl2, (0,0), sigmaX=10, sigmaY=10)
@@ -135,15 +144,36 @@ cl2 = clahe2.apply(data)
 #edged = cv2.Canny(cl2, 140, 250)
 #_, thresh_g = cv2.threshold(green_dilated, 40, 255,cv2.THRESH_TOZERO)
 #_, thresh = cv2.threshold(divide, 0, 255, cv2.THRESH_TOZERO+cv2.THRESH_OTSU)
+import os 
+for k, v in os.environ.items():
+	if k.startswith("QT_") and "cv2" in v:
+	    del os.environ[k]
+
+#color = ('b','g','r')
+#hist = cv2.calcHist([clahe2],[0],None,[256],[0,256])
+
+hist,bin = np.histogram(cl2.ravel(),256,[0,255])
+plt.xlim([0,255])
+plt.plot(hist)
+plt.title('histogram')
+plt.show()
 
 
+
+# step thresholder
 _, thresh = cv2.threshold(cl2, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+
+#gradient thresholder - canny / sobel 
+
+
 kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
 morph = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
 
 
-
-cv2.imshow('result', np.uint8(morph))
-cv2.imshow('original', data)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+### visuals 
+# cv2.imshow('result', np.uint8(morph))
+# cv2.imshow('original', data)
+# cv2.imshow('clahe', cl2)
+# #cv2.imshow('end im', end_im)
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
