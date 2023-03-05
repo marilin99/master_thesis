@@ -17,8 +17,8 @@ plugins_dir = '/home/marilin/Documents/ESP/diameterJ_test/ImageJ/plugins/Diamete
 
 sj.config.add_option(f'-Dplugins.dir={plugins_dir}')
 
-ij = imagej.init('sc.fiji:fiji')
-#ij = imagej.init()
+#ij = imagej.init('sc.fiji:fiji')
+ij = imagej.init(add_legacy=True)
 
 # load a sample image
 image = ij.io().open(PATH_1)
@@ -79,7 +79,7 @@ imp.setTitle("imp_fib")
 
 #mask = ij.op().run("")
 #mask = ij.op().run("morphology.fillHoles", mask)
-ij.py.show(mask, "gray")
+#ij.py.show(mask, "gray")
 
 
 
@@ -121,30 +121,15 @@ ij.py.show(mask, "gray")
 
 #print("hey" if ij.ui().isHeadless() else "ney")
 
-# plugin = "DiameterJ Segment"
-# ij.py.run_plugin(plugin, {"do":"Yes", "image":1024, "image_0":768, "top":0, "top_0":0, "bottom":1024, "bottom_0":650, "stat. do_0":"No", "choose":"/home/marilin/Documents/ESP/diameterJ_test/sem_test"}, imp = imp)
+plugin = "DiameterJ Segment"
+ij.py.run_plugin(plugin, {"do":"Yes", "image":1024, "image_0":768, "top":0, "top_0":0, "bottom":1024, "bottom_0":650, "stat. do_0":"No", "choose":"/home/marilin/Documents/ESP/diameterJ_test/sem_test"}, imp = imp)
 
-
-# import imageio
-# import imagej
-
-# # Start ImageJ
-# ij = imagej.init('1.5.3')
-
-# # Load image
-# image = imageio.imread(PATH_1)
-
-# # Convert image to 8-bit
-# image = (image / image.max() * 255).astype('uint8')
-
-# # Run DiameterJ macro
+###
+# ## other way 
 # macro = """
-# run("DiameterJ Segment ", "do=Yes image=1024 image_0=768 top=0 top_0=0 bottom=1024 bottom_0=650 stat. do_0=No choose=/home/marilin/Documents/ESP/diameterJ_test/sem_test");
+# run("DiameterJ Segment", "do=Yes image=1024 image_0=768 top=0 top_0=0 bottom=1024 bottom_0=650 stat. do_0=No choose=/home/marilin/Documents/ESP/diameterJ_test/sem_test");
 # """
+# # # Convert image to 8-bit
 # ij.py.run_macro(macro, {'Image': image})
 
-# # Stop ImageJ
-# ij.exit()
-
-# result = ij.WindowManager.getCurrentImage()
-# ij.py.show(result)
+# ij.py.show(imp, "gray")

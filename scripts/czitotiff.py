@@ -13,153 +13,114 @@ import czifile
 import tifffile
 from scipy import ndimage
 from scipy.ndimage import *
+import webcolors
 
 # assuming the data folder is in the same folder as this script
-#FILES = os.listdir("/home/marilin/Documents/ESP/data/16.08.22_dead_live") # change this once files in nextcloud or sth 
+PATH = "/home/marilin/Documents/ESP/data/16.08.22_dead_live/"  # change this once files in the network server
+FILES = os.listdir(PATH)
+FIN = []
 
-# PATH = "/home/marilin/Documents/ESP/data/16.08.22_dead_live/"
-
-# FILES = os.listdir(PATH)
-# FIN = []
-
-# for file in FILES:
-# 	if "txt" not in file:
-# 		file = PATH + file
-# 		FIN.append(file)
-
-# print(FIN)
-
-FIN = ["/home/marilin/Documents/ESP/data/16.08.22_dead_live/control_50killed_syto_PI_incub4h_3.czi"]
-#"/home/marilin/Documents/ESP/data/SYTO_PI/sack_fibers_NOgrowth_syto_PI_1-Image Export-10_z01c1-3.jpg"]
-
-# function taken from https://github.com/AllenCellModeling/aicspylibczi
-def norm_by(x, min_, max_):
-    norms = np.percentile(x, [min_, max_])
-    i2 = np.clip((x - norms[0]) / (norms[1] - norms[0]), 0, 1)
-    return i2
+for file in FILES:
+    # in case there is a supportive txt file in the folder
+	if "txt" not in file:
+		file = PATH + file
+		FIN.append(file)
+                
+print(FIN)
 
 
 for file in FIN:
+
     aics = AICSImage(file)
-    # does not include units
-    #print(aics.physical_pixel_sizes)
-    print(aics.ome_metadata) # == .metadata
+
+    ##### czi global metadata collection #####
+    colors = []
+    czi = czifile.CziFile(file)
+    metadatadict_czi = czi.metadata(raw = False)
     
-    # # xarray's dataarray object
-    #aics.get_xarray_stack().shape - (1, 1, 3, 16, 512, 512) - I,T, C,Z,Y,X
+    # physical size assertion
+    sanity_x  = metadatadict_czi['ImageDocument']['Metadata']['Experiment']['ExperimentBlocks']['AcquisitionBlock']['AcquisitionModeSetup']['ScalingX']
+    sanity_y  = metadatadict_czi['ImageDocument']['Metadata']['Experiment']['ExperimentBlocks']['AcquisitionBlock']['AcquisitionModeSetup']['ScalingY'] # in meters
 
-    # first stack of Z
-    arr1= aics.get_xarray_stack()[0,0,:,0,:,:] 
-    print(arr1.shape)
-    # #print(arr1.shape)
-    # # reshaping I,T,C,Y,X to Y,X,C,I,T - outputs red channel for all channels for this reader
-    np_arr = arr1.to_numpy().astype(np.uint8).transpose(1,2,0)
+    # this is in um 
+    scale_y = aics.physical_pixel_sizes[-2] * 10**-6
+    scale_x = aics.physical_pixel_sizes[-1] * 10**-6
 
-    (G,R,T) = cv2.split(np_arr)
-    merged = cv2.cvtColor(T, cv2.COLOR_GRAY2BGR)
-    merged[:,:,1] = 0
-    merged[:,:,1] += G
-    merged[:,:,2] = 0
-    merged[:,:,2] += R
-    merged[:,:,0] = 0
-    merged = cv2.cvtColor(merged, cv2.COLOR_BGR2GRAY)
+    # assertion that the aics module physical_pixel_sizes() works 
+    assert(round(scale_x, 8) == round(sanity_x, 8) and round(scale_y, 8) == round(sanity_y, 8))
+
+    # conditioning for general struc where the transmission channel is the last one - assuming the pmt structure
+    if metadatadict_czi['ImageDocument']['Metadata']['Experiment']['ExperimentBlocks']['AcquisitionBlock']['MultiTrackSetup']['TrackSetup']['Detectors']['Detector'][0]['Name'] != '':
+        for i in range(2):
+            ch_n_hex_color = metadatadict_czi['ImageDocument']['Metadata']['Experiment']['ExperimentBlocks']['AcquisitionBlock']['MultiTrackSetup']['TrackSetup']['Detectors']['Detector'][i]['Color']
+            # lime is not suited with the next piece of code - possibly need some more color conditioning on this side in the future 
+            if webcolors.hex_to_name(ch_n_hex_color) == "lime":
+                colors.append("green")
+            else:
+                colors.append(webcolors.hex_to_name(ch_n_hex_color))
+
+        # xarray's dataarray object - making an assumption that the z stack is 3rd last el in tuple 
+        # iterating through all of the z-stacks 
+        #  print(aics.get_xarray_stack().shape)  # I,T,C,Z,Y,X
+
+        for val in range(aics.get_xarray_stack().shape[-3]):
+
+            arr1= aics.get_xarray_stack()[0,0,:,val,:,:] 
+        
+            # reshaping I,T,C,Y,X to Y,X,C,I,T - outputs red channel for all channels for this reader
+            np_arr = arr1.to_numpy().astype(np.uint8).transpose(1,2,0)
+
+            # only for pmt struc
+            (ch1,ch2,T) = cv2.split(np_arr)
+
+            # for merging purposes 
+            merged = cv2.cvtColor(T, cv2.COLOR_GRAY2BGR)
+            merged[:,:,1] = 0
+            merged[:,:,1] += ch1
+            merged[:,:,2] = 0
+            merged[:,:,2] += ch2
+            merged[:,:,0] = 0
+            merged = cv2.cvtColor(merged, cv2.COLOR_BGR2GRAY).astype(np.uint8)
+
+            # saving images and xml to specified folder 
+                
+            # saving xml just in case 
+            # f =  open(f"{<TODO>}.xml", "w")
+            # f.write(czi.metadata())
+            # f.close()
 
 
+    # color collection - so far (5.03.23) only red and lime aka green are known 
 
-    # thresh = cv2.adaptiveThreshold(merged, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY,9,2)
-    # edged = cv2.erode(thresh, (3,3), iterations=1)
-
-    # normalizing ?
-    # linear transform 
-
-    # #  adding G+R
-    # merged = np.zeros((T.shape))
-    # merged[:,1] += G
-    # merged[:,2] += R
-
-    # #print(np_arr)
-    # #print(trans_arr1)
-    # r_channel = np_arr[:,:,0,0,0]
-    # g_channel = np_arr[:,:,1,0,0]
-    # b_channel = np_arr[:,:,2,0,0]
-
-    ############
-
-    #czi = czifile.CziFile(file)
-
-    # czi global metadata 
-    # metadatadict_czi = czi.metadata()
-    # f =  open("myxmlfile.xml", "w")
-    # f.write(metadatadict_czi)
+    # saving xml just in case 
+    # f =  open("myxmlfile_24_sytopi.xml", "w")
+    # f.write(czi.metadata)
     # f.close()
-    # # memory mappable tiff file
-    # czitiff = czifile.czi2tif(file)
 
 
-    #czi_str = czi.__str__()
-    #print(czi_arr)
-
-# file2 = "/home/marilin/Documents/ESP/data/16.08.22_dead_live/sack_fibers_NOgrowth_syto_PI_1.czi.tif"
-
-# # shape is C, Z, Y, X
-# tif_file  =tifffile.tifffile.imread(file2)
-
-# print(tif_file.shape)
-
-# rgb = tif_file[:,0,:,:].transpose(1,2,0)
-# (G,R,T) = cv2.split(rgb)
-
-# merged = cv2.cvtColor(T, cv2.COLOR_GRAY2BGR)
-# merged[:,:,1] += G
-# merged[:,:,2] += R
-
-# #cv2.imshow("test", rgb)
-# cv2.imwrite("/home/marilin/Documents/ESP/data/16.08.22_dead_live/sack_fibers_NOgrowth_syto_PI_1_slice_1_merged_wrong.tif", merged)
-#tif_page = tifffile.TiffPage(file2,0)
-# from libtiff import TIFF, TIFFfile, TIFFimage
-
-# tif = TIFF.open(file2, mode='r')
-
-# img = tif.read_image(tif)
-
-# #print(img)
-
-# #for bgr in range(0,len(list(tif.iter_images()),3)):
-
-# B = list(tif.iter_images())[6]
-# G = list(tif.iter_images())[7]
-# R = list(tif.iter_images())[8]
-
-# merged = cv2.merge([B, G, R])
-
-# (B, G, R) = cv2.split(merged)
-
-# tif_file = TIFFfile(file2)
-# samples, sample_names = tif_file.get_samples()
 
 
-#cv2.imread(file)
-# # show each channel individually
-cv2.imshow("green", G)
-cv2.imshow("red", R)
-cv2.imwrite("green_intensities_incub4h_3.png", G)
-cv2.imwrite("red_intensities_incub4h_3.png", R)
-#cv2.imwrite("merged_intensities_incub_4h_1.png", merged)
-#cv2.imshow("transmission",T)
-#cv2.imshow("Merged", merged)
-#cv2.imshow("res", result)
-# cv2.imshow("thresh", thresh)
-# cv2.imshow("edges", edged)
-#cv2.imshow("orig", cv2.imread(FIN[-1]))
+
+##### visualisation #####
+
+# cv2.imshow("green", G)
+# cv2.imshow("red", R)
+# cv2.imshow("transmission",T)
+
+##### saving the file #####
+
+#for color in colors: 
+#cv2.imwrite("green_intensities_incub4h_3.png", G)
+#cv2.imwrite("red_intensities_incub4h_3.png", R)
+#cv2.imwrite("transmission_intensities_incub4h_3.png", T)
+
+###### 
+
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
-# file = cv2.imread("testing2.tif")
-# cv2.imshow("orig", file)
 
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
-
+#############################################################
 # for file in FIN:
 
 #     test = aicspylibczi.CziFile(file)
