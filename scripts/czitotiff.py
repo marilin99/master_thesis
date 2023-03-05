@@ -15,14 +15,18 @@ from scipy import ndimage
 from scipy.ndimage import *
 import webcolors
 
+
+# assuming the target dir-s exist 
+
 # assuming the data folder is in the same folder as this script
-PATH = "/home/marilin/Documents/ESP/data/16.08.22_dead_live/"  # change this once files in the network server
-FILES = os.listdir(PATH)
+PATH = "/home/marilin/Documents/ESP/data/SYTO_PI/" #, "/home/marilin/Documents/ESP/data/FM_SYTO/"]  # change this once files in the network server
+TARGET_PATH = "/home/marilin/Documents/ESP/data/SYTO_PI_conversion/"
+FILES = os.listdir(PATH) 
 FIN = []
 
 for file in FILES:
-    # in case there is a supportive txt file in the folder
-	if "txt" not in file:
+    # in case there is a supportive txt file or other format in the folder
+	if "czi" in file:
 		file = PATH + file
 		FIN.append(file)
                 
