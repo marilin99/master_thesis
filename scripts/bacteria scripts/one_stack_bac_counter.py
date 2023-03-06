@@ -1,4 +1,5 @@
-# suggested method to count the bacteria 
+# suggested method to count the green + red bacteria - if file has the word "control" in it 
+# best for 1-stack images 
 
 import os.path
 import numpy as np
@@ -20,28 +21,18 @@ from varname import argname
 # 	if k.startswith("QT_") and "cv2" in v:
 # 	    del os.environ[k]
 
+# running this script if just one stack of image in bac counter folder, green+red
+
 start_time = time.time()
-#img = cv2.imread('/home/marilin/Documents/ESP/data/SYTO_PI/fibers_24h_growth_syto_PI_1-Image Export-07_c1-3.jpg')
-#red_chan = cv2.imread("red_intensities.png",0)
-#red_chan = cv2.imread("red_intensities_03.png",0)
-red_chan = cv2.resize(cv2.imread("red_intensities_incub_4h_2.png",0), (512,512))
-# #green_chan = cv2.imread("green_intensities.png",0)
-# #green_chan = cv2.imread("green_intensities_03.png",0)
-green_chan =  cv2.resize(cv2.imread("green_intensities_incub_4h_2.png",0), (512,512))
 
-# # resizing to 512,512 - works_for_both() func dependency 
-# red_chan = cv2.resize(red_chan, (512,512))
-# green_chan = cv2.resize(green_chan, (512,512))
+orig_red = cv2.imread("/home/marilin/Documents/ESP/data/SYTO_PI_conversion/stack_fibers_24h_growth_syto_PI_1_red_3.png",0)
+orig_green = cv2.imread("/home/marilin/Documents/ESP/data/SYTO_PI_conversion/stack_fibers_24h_growth_syto_PI_1_green_3.png",0)
+shape_red = orig_red.shape
+shape_green = orig_green.shape
 
-
-# (B,green_chan,red_chan) = cv2.split(img)
-# img[:,:,1] = 0 
-# img[:,:,1] = green_chan
-# img[:,:,2] = 0 
-# img[:,:,2] = red_chan
-# cv2.imshow("green", img[:,:,1])
-# cv2.imshow("red", img[:,:,2])
-## mean filter 
+# works_for_both() func dependency 
+red_chan = cv2.resize(orig_red, (512,512))
+green_chan = cv2.resize(orig_green, (512,512))
 
 ## red chan 
 #kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2,2))
@@ -63,7 +54,6 @@ def works_for_red(data):
     cv2.imshow("thresholded", thresh_r)
 
     return thresh_r
-
 
 ###
 def works_for_green(data):
@@ -106,10 +96,10 @@ def works_for_both(data):
     # https://github.com/pwwang/python-varname
     
     # change condition if needed - type based on variable name 
-    if 'g' in argname("data"):
+    if 'green' in argname("data"):
         ty = "green"
 
-    elif 'r' in argname("data"):
+    elif 'red' in argname("data"):
         ty = "red"
 
     cv2.imshow("data", data)
@@ -126,9 +116,15 @@ def peaker(data,ty):
     # define a disk shape - 4 for red channel, 3 for green channel
     # possibly needs some scaling, depending on resolution? - the bigger the initial reso, the more the disk size
     if ty == "green":
-        neighborhood = disk(7) # 3 w 512x512 - seems like ~4x less needs +4 size disk?
+        if 512 in shape_green:
+            neighborhood = disk(3) # 3 w 512x512 - w 1024 needs +4 size disk?
+        elif 1024 in shape_green:
+            neighborhood = disk(7) # 3 w 512x512 - w 1024 needs +4 size disk?
     elif ty == "red":
-        neighborhood = disk(8) # 4 w 512x512 - w 1024 would need +4 size disk 
+        if 512 in shape_red:
+            neighborhood = disk(4) # 4 w 512x512 - w 1024 would need +4 size disk 
+        elif 1024 in shape_red:
+            neighborhood = disk(8)
 
     #apply the local maximum filter; all pixel of maximal value 
     #in their neighborhood are set to 1
@@ -164,6 +160,7 @@ labeled_array, num_features_r = label(peaker(*works_for_both(red_chan)))
 # w both - 752
 labeled_array, num_features_g = label(peaker(*works_for_both(green_chan)))
 
+# "greens: ", num_features_g, 
 print("greens: ", num_features_g, "reds: ", num_features_r)
 print("time it took: ", time.time()-start_time)
 ##
@@ -218,8 +215,10 @@ print("time it took: ", time.time()-start_time)
 # slices = ndimage.find_objects(labeled)
 ##
 
+### visualisation ###
 #cv2.imshow("orig", img)
 cv2.imshow("red_chan", red_chan)
+cv2.imshow("green_chan", green_chan)
 # # cv2.imshow("red_chan_mean", cl2)
 # # cv2.imshow("red_dilated", green_dilated)
 # # cv2.imshow("red_thresh", thresh_g)

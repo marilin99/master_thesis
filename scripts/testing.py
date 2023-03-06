@@ -24,14 +24,3 @@
 # #aicsio_skills("/home/marilin/Documents/ESP/data/15june2022/spin1_DAPImounting_syto9_stack4.czi")
 # aicsio_skills("/home/marilin/Documents/ESP/data/15june2022/spin1_DAPImounting_syto9_stack4.czi")
 # #OmeTiffWriter.save("/home/marilin/Documents/ESP/data/15june2022/spin1_DAPImounting_syto9_stack4.czi", "my_file.ome.tif", dim_order="TCZYX")
-
-
-import xml.etree.ElementTree as ET
-tree = ET.parse("myxmlfile_24_sytopi.xml")
-root = tree.getroot()
-print(root)
-for scale in root.findall("Distance"):
-    print(scale)
-    # value = scale.find("Value").text
-    # name = scale.get("Id")
-    # print(name, value)
