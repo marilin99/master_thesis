@@ -1,5 +1,7 @@
-# suggested method to count the green + red bacteria - if file has the word "control" in it 
-# best for 1-stack images 
+#######################################################################
+####      suggested method to count the green + red bacteria       ####
+#### if file has the word "control" in it, best for 1-stack images ####
+#######################################################################
 
 import os.path
 import numpy as np
@@ -116,7 +118,7 @@ def peaker(data,ty):
     # define a disk shape - 4 for red channel, 3 for green channel
     # possibly needs some scaling, depending on resolution? - the bigger the initial reso, the more the disk size
     if ty == "green":
-        if 512 in shape_green:
+        if 512 in shape_green: # abnormality to these images 
             neighborhood = disk(3) # 3 w 512x512 - w 1024 needs +4 size disk?
         elif 1024 in shape_green:
             neighborhood = disk(7) # 3 w 512x512 - w 1024 needs +4 size disk?

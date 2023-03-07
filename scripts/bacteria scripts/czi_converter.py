@@ -40,6 +40,8 @@ for f in FILES:
         colors = []
         czi = czifile.CziFile(file)
         metadatadict_czi = czi.metadata(raw = False)
+
+        # could also fetch distance between z-stacks if needed
         
         # physical size assertion
         sanity_x  = metadatadict_czi['ImageDocument']['Metadata']['Experiment']['ExperimentBlocks']['AcquisitionBlock']['AcquisitionModeSetup']['ScalingX']
