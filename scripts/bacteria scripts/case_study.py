@@ -129,7 +129,7 @@ def peaker(data,ty):
     return detected_peaks
 
 ## SYTO-PI case study ##
-## Q1: What is % of bacterial cells that stain with PI (dead cells)?
+## Q1: What is % of bacterial cells that stain with PI - red (dead cells) - red/green ratio?
 ## Q2: Is there a difference in bacterial viability depending on fiber material? - this is only about PCL-PEO I think
 
 ## check what is in the folder - unique names - no growth fibers, 24h fibers, control 
@@ -147,6 +147,8 @@ FIL_FILES = []
 bac_counting = {}
 
 #print(natsorted(FILES))
+
+# filtering out png and not control values 
 for f in natsorted(FILES):
     # created xml from core files, can fetch the unique files from there 
     if f.endswith(".xml"):
@@ -159,47 +161,30 @@ for f in natsorted(FILES):
             FIL_FILES.append(f)
 
 global_core_name = None
+
+# tmp sol - ideally should have a mark that ends the iteration or use the piece of code
+# adding a pseudo file to mark the end of the list 
+FIL_FILES.append("_".join((natsorted(list(set(FIL_FILES)))[-1]).split("_")[:-3])+"_zzz.png")
+
 # using set to remove duplicates 
 for f in natsorted(list(set(FIL_FILES))):
 
-    if f.startswith("stack_fibers_24h_growth_syto_PI"):
+    #if f.startswith("stack_fibers_24h_growth_syto_PI"):
        
-        file = PATH+f
-        core_name = "_".join(f.split("_")[:-2])
+    file = PATH+f
+    core_name = "_".join(f.split("_")[:-2])
 
         # gathering data and resetting after every new set of stacks, considering first round
-        if core_name != global_core_name:
-            if global_core_name != None:
-                print("ideally not none cases", core_name)
-                bac_counting[f"{global_core_name}_red"] = label(base_im_r)[1]
-                bac_counting[f"{global_core_name}_green"] = label(base_im_g)[1]
-
-                base_im_r, base_im_g = np.zeros((512,512), dtype=np.uint8), np.zeros((512,512), dtype=np.uint8)
-
-            #### saving data to text file #####
-            with open(f"{PATH}{global_core_name}_regions_r.txt", "w+") as file_m:
-                for key, val in region_red.items():
-                    file_m.write(f"{key}: {val}")
-                    file_m.write("\n")
-            
-            with open(f"{PATH}{global_core_name}_regions_g.txt", "w+") as file_l:
-                for key, val in region_green.items():
-                    file_l.write(f"{key}: {val}")
-                    file_l.write("\n")
-
-            # resetting var name
-            global_core_name = core_name
-
-        # final case
-        if core_name == global_core_name and ("_".join(global_core_name.split("_")[:-1])+"_"+str(int(global_core_name.split("_")[-1])+1)) not in unique_files:
-            #print("ideally final case", core_name)
-
+ 
+    if core_name != global_core_name:
+        if global_core_name != None:
+            print(core_name)
             bac_counting[f"{global_core_name}_red"] = label(base_im_r)[1]
             bac_counting[f"{global_core_name}_green"] = label(base_im_g)[1]
 
             base_im_r, base_im_g = np.zeros((512,512), dtype=np.uint8), np.zeros((512,512), dtype=np.uint8)
 
-            #### saving data to text file #####
+            #### saving detected peaks data to text file #####
             with open(f"{PATH}{global_core_name}_regions_r.txt", "w+") as file_m:
                 for key, val in region_red.items():
                     file_m.write(f"{key}: {val}")
@@ -209,63 +194,65 @@ for f in natsorted(list(set(FIL_FILES))):
                 for key, val in region_green.items():
                     file_l.write(f"{key}: {val}")
                     file_l.write("\n")
-            # resetting var name 
-            global_core_name = core_name
+
+        # resetting var name
+        global_core_name = core_name
+
+  
+        # final case
+  
+        # global_core_name!= None and ("_".join(global_core_name.split("_")[:-1])+"_"+str(int(global_core_name.split("_")[-1])+1)) not in unique_files:
+ 
+    #print(file)
+    if "red" in file: 
+        #params = []
+        orig_red = cv2.imread(file,0)
+        shape_red = orig_red.shape
+        red_chan = cv2.resize(orig_red, (512,512))
         
-    
-        # post 24h PI_1 - 8 red, 27 green 
-        # post 24h PI_2 - 8 red, 6 green 
-        # post 24h PI 3 - 3 red, 9 green
-        # post 24h PI 4 - 1 red, 6 green
-        # post 24h PI 5 - 7 red, 4 green
-        # post 24h PI 6 - 0 red, 2 green 
-        # post 24h PI 7 - 8 red, 7 green
+        # centrosymmetric structure
+        labeled_array, num_features_r = label(peaker(*works_for_both(red_chan)))
+        uniq_vals = np.unique(labeled_array.flatten())
 
-        #print(file)
-        if "red" in file: 
-            #params = []
-            orig_red = cv2.imread(file,0)
-            shape_red = orig_red.shape
-            red_chan = cv2.resize(orig_red, (512,512))
-            
-            # centrosymmetric structure
-            labeled_array, num_features_r = label(peaker(*works_for_both(red_chan)))
-            uniq_vals = np.unique(labeled_array.flatten())
+        #print(np.unique(labeled_array.flatten())!=0)
+        ## for the cases where the bacteria is layered on top of each other 
+        for val in uniq_vals[uniq_vals!=0]:
+            idxs = np.argwhere(labeled_array==val)
+            start_point = idxs[0]
+            end_point = idxs[-1]
+            anchor_point = start_point + (end_point-start_point)//2
+            area = len(np.argwhere(labeled_array==val))
+            region_red[f"region_{counter_red}"] = []
+            # areas taken up, starting point of area, last coordinate of area, anchor_point, area in amount of px-s
+            region_red[f"region_{counter_red}"].extend([idxs, start_point, end_point, anchor_point, area])
+            counter_red+=1
 
-            #print(np.unique(labeled_array.flatten())!=0)
-            ## for the cases where the bacteria is layered on top of each other 
-            for val in uniq_vals[uniq_vals!=0]:
-                idxs = np.argwhere(labeled_array==val)
-                start_point = idxs[0]
-                end_point = idxs[-1]
-                anchor_point = start_point + (end_point-start_point)//2
-                area = len(np.argwhere(labeled_array==val))
-                region_red[f"region_{counter_red}"] = []
-                region_red[f"region_{counter_red}"].extend([idxs, start_point, end_point, anchor_point, area])
-                counter_red+=1
+        #print(np.nonzero(labeled_array))
+        print("red", num_features_r)
 
-            #print(np.nonzero(labeled_array))
-            print("red", num_features_r)
+    elif "green" in file: 
+        orig_green = cv2.imread(file,0)
+        shape_green = orig_green.shape
+        green_chan = cv2.resize(orig_green, (512,512))
+        labeled_array, num_features_g = label(peaker(*works_for_both(green_chan)))
+        print("green", num_features_g)
+        uniq_vals = np.unique(labeled_array.flatten())
 
-        elif "green" in file: 
-            orig_green = cv2.imread(file,0)
-            shape_green = orig_green.shape
-            green_chan = cv2.resize(orig_green, (512,512))
-            labeled_array, num_features_g = label(peaker(*works_for_both(green_chan)))
-            print("green", num_features_g)
-            uniq_vals = np.unique(labeled_array.flatten())
+        #print(np.unique(labeled_array.flatten())!=0)
+        ## for the cases where the bacteria is layered on top of each other 
+        for val in uniq_vals[uniq_vals!=0]:
+            idxs = np.argwhere(labeled_array==val)
+            start_point = idxs[0]
+            end_point = idxs[-1]
+            anchor_point = start_point + (end_point-start_point)//2
+            area = len(np.argwhere(labeled_array==val))
+            region_green[f"region_{counter_green}"] = []
+            region_green[f"region_{counter_green}"].extend([idxs, start_point, end_point, anchor_point, area])
+            counter_green+=1
 
-            #print(np.unique(labeled_array.flatten())!=0)
-            ## for the cases where the bacteria is layered on top of each other 
-            for val in uniq_vals[uniq_vals!=0]:
-                idxs = np.argwhere(labeled_array==val)
-                start_point = idxs[0]
-                end_point = idxs[-1]
-                anchor_point = start_point + (end_point-start_point)//2
-                area = len(np.argwhere(labeled_array==val))
-                region_green[f"region_{counter_green}"] = []
-                region_green[f"region_{counter_green}"].extend([idxs, start_point, end_point, anchor_point, area])
-                counter_green+=1
+        # breaking the loop when reached the end of the file list 
+        # else: 
+        #     break
 
 
 # ## red chan 
@@ -276,11 +263,6 @@ for f in natsorted(list(set(FIL_FILES))):
 #print(regions)
 print("time it took: ", time.time()-start_time)
 print(bac_counting)
-
-#### writing dict-s to text file for future analysis ####
-
-# needs a diff PI for name
-
 
 
 
