@@ -1,3 +1,5 @@
+#### transmission ch subtraction testing for im normalization ####
+
 import os.path
 import numpy as np
 import cv2
@@ -21,24 +23,47 @@ from natsort import natsorted
 
 ### control bac counter 
 counter_2 = 0
-def works_for_both(data):
+def works_for_both(data, sub_mat):
     global counter_2
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4,4))
-    ## green chan
+    
+    #subtraction of transmission - should consider full iteration for subtracting mean
+  
+    #orig_trans = cv2.imread(f"{PATH}stack_fibers_24h_growth_syto_PI_1_transmission_0.png",0)
+    #trans_chan = cv2.resize(orig_trans, (512,512))
+    data = np.mean(sub_mat)-data
+    data[data>255] = 255
 
+    # subtraction of empty fibers - channels g and r accordingly - not very useful
+    
+    # #green 
+    # if 'green' in argname("data"):
+    #     green_trans = cv2.imread(f"{PATH}fibers_NOgrowth_syto_PI_1_green_0.png",0)
+    #     data = np.std(green_trans)-data
+
+    # elif 'red' in argname("data"):
+    #     red_trans = cv2.imread(f"{PATH}fibers_NOgrowth_syto_PI_1_red_0.png",0)
+    #     data = np.std(red_trans)-data
+
+    #print(np.unique(data))    
     # clahe req grayscale img
-    clahe2 = cv2.createCLAHE(clipLimit=1, tileGridSize=(20,20))
-    cl2 = clahe2.apply(data)
+    # data = np.mean(data) - data
+    # data[data<0] = 0
 
-    #green_chan_mean = cv2.blur(cl2, (3,3))
+    clahe2 = cv2.createCLAHE(clipLimit=1, tileGridSize=(20,20))
+    cl2 = clahe2.apply(np.uint8(data))
+
+
+    mean = cv2.blur(cl2, (3,3))
+
     # over 200 for level 
     # dilating in case the bac are small
-    #eroded = cv2.erode(cl2, kernel)
-    #dilated = cv2.dilate(eroded, kernel)
+    # eroded = cv2.erode(mean, kernel)
+    # dilated = cv2.dilate(eroded, kernel)
     #print(np.unique(dilated))
     #thresh = cv2.adaptiveThreshold(dilated, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 9, 30)
-    _, thresh = cv2.threshold(data, 200, 255,cv2.THRESH_TOZERO)
-    #_, thresh = cv2.threshold(dilated, 0, 255, cv2.THRESH_TOZERO+cv2.THRESH_OTSU)
+    _, thresh = cv2.threshold(mean, 210, 255,cv2.THRESH_TOZERO)
+    #_, thresh = cv2.threshold(np.uint8(cl2), 0, 255, cv2.THRESH_TOZERO+cv2.THRESH_OTSU)
 
     # works for 1024x1024
     # PI_1 - 200, PI_2 - 100, PI_3 - 140, PI_4 - 200, PI_5 - 220, PI_6 - 110, PI_7 - 200
@@ -52,7 +77,7 @@ def works_for_both(data):
     elif 'red' in argname("data"):
         ty = "red"
 
-    #cv2.imshow(f"data_{counter_2}", data)
+    #cv2.imshow(f"data_{counter_2}", data.astype(np.uint8))
     #cv2.imshow("normalized", cl2)
     #cv2.imshow(f"dilated_counter{counter_2}", dilated)
     #cv2.imshow(f"thresholded_{counter_2}", thresh)
@@ -129,7 +154,7 @@ def peaker(data,ty):
     return detected_peaks
 
 ## SYTO-PI case study ##
-## Q1: What is % of bacterial cells that stain with PI - red (dead cells) - green/red ratio?
+## Q1: What is % of bacterial cells that stain with PI - red (dead cells) - red/green ratio?
 ## Q2: Is there a difference in bacterial viability depending on fiber material? - this is only about PCL-PEO I think
 
 ## check what is in the folder - unique names - no growth fibers, 24h fibers, control 
@@ -143,6 +168,7 @@ region_green = {}
 unique_files = []
 counter_red = 0
 counter_green = 0
+counter_mat_g, counter_mat_r = 0,0
 FIL_FILES = []
 bac_counting = {}
 
@@ -164,91 +190,113 @@ global_core_name = None
 
 # tmp sol - ideally should have a mark that ends the iteration or use the piece of code
 # adding a pseudo file to mark the end of the list 
-FIL_FILES.append("_".join((natsorted(list(set(FIL_FILES)))[-1]).split("_")[:-3])+"_zzz.png")
+#FIL_FILES.append("_".join((natsorted(list(set(FIL_FILES)))[-1]).split("_")[:-3])+"_zzz.png")
 
+trans_col = []
+# tmp transmission collection 
+for f in natsorted(list(set(FIL_FILES))):
+
+    if f.startswith("stack_fibers_24h_growth_syto_PI_7"):
+
+        file = PATH+f
+        # transmission ch subtraction 
+        if "transmission" in file: 
+                    
+            orig_trans = cv2.imread(file,0)
+            trans_chan = cv2.resize(orig_trans, (512,512))
+            trans_col.append(trans_chan)
+
+print("length of trans col", len(trans_col))
 # using set to remove duplicates 
 for f in natsorted(list(set(FIL_FILES))):
 
-    #if f.startswith("stack_fibers_24h_growth_syto_PI"):
+    if f.startswith("stack_fibers_24h_growth_syto_PI_7"):
        
-    file = PATH+f
-    core_name = "_".join(f.split("_")[:-2])
+        file = PATH+f
+        # core_name = "_".join(f.split("_")[:-2])
 
-        # gathering data and resetting after every new set of stacks, considering first round
- 
-    if core_name != global_core_name:
-        if global_core_name != None:
-            print(core_name)
-            bac_counting[f"{global_core_name}_red"] = label(base_im_r)[1]
-            bac_counting[f"{global_core_name}_green"] = label(base_im_g)[1]
+        #     # gathering data and resetting after every new set of stacks, considering first round
+    
+        # if core_name != global_core_name:
+        #     if global_core_name != None:
+        #         print(core_name)
+        #         bac_counting[f"{global_core_name}_red"] = label(base_im_r)[1]
+        #         bac_counting[f"{global_core_name}_green"] = label(base_im_g)[1]
 
-            base_im_r, base_im_g = np.zeros((512,512), dtype=np.uint8), np.zeros((512,512), dtype=np.uint8)
+        #         base_im_r, base_im_g = np.zeros((512,512), dtype=np.uint8), np.zeros((512,512), dtype=np.uint8)
 
-            #### saving detected peaks data to text file #####
-            with open(f"{PATH}{global_core_name}_regions_r.txt", "w+") as file_m:
-                for key, val in region_red.items():
-                    file_m.write(f"{key}: {val}")
-                    file_m.write("\n")
+        #         #### saving detected peaks data to text file #####
+        #         with open(f"{PATH}{global_core_name}_regions_r.txt", "w+") as file_m:
+        #             for key, val in region_red.items():
+        #                 file_m.write(f"{key}: {val}")
+        #                 file_m.write("\n")
+                
+        #         with open(f"{PATH}{global_core_name}_regions_g.txt", "w+") as file_l:
+        #             for key, val in region_green.items():
+        #                 file_l.write(f"{key}: {val}")
+        #                 file_l.write("\n")
+
+        #     # resetting var name
+        #     global_core_name = core_name
+
+    
+            # final case
+    
+            # global_core_name!= None and ("_".join(global_core_name.split("_")[:-1])+"_"+str(int(global_core_name.split("_")[-1])+1)) not in unique_files:
+    
+        #print(file)
+
+
+    
+        if "red" in file: 
+            #params = []
+            counter_mat_r+=1
+            orig_red = cv2.imread(file,0)
+            shape_red = orig_red.shape
+            red_chan = cv2.resize(orig_red, (512,512))
             
-            with open(f"{PATH}{global_core_name}_regions_g.txt", "w+") as file_l:
-                for key, val in region_green.items():
-                    file_l.write(f"{key}: {val}")
-                    file_l.write("\n")
+            # centrosymmetric structure
+            labeled_array, num_features_r = label(peaker(*works_for_both(red_chan, trans_col[counter_mat_r-1])))
+            uniq_vals = np.unique(labeled_array.flatten())
 
-        # resetting var name
-        global_core_name = core_name
+            #print(np.unique(labeled_array.flatten())!=0)
+            ## for the cases where the bacteria is layered on top of each other 
+            for val in uniq_vals[uniq_vals!=0]:
+                idxs = np.argwhere(labeled_array==val)
+                start_point = idxs[0]
+                end_point = idxs[-1]
+                anchor_point = start_point + (end_point-start_point)//2
+                area = len(np.argwhere(labeled_array==val))
+                region_red[f"region_{counter_red}"] = []
+                # areas taken up, starting point of area, last coordinate of area, anchor_point, area in amount of px-s
+                region_red[f"region_{counter_red}"].extend([idxs, start_point, end_point, anchor_point, area])
+                counter_red+=1
 
-  
-        # final case
-  
-        # global_core_name!= None and ("_".join(global_core_name.split("_")[:-1])+"_"+str(int(global_core_name.split("_")[-1])+1)) not in unique_files:
- 
-    #print(file)
-    if "red" in file: 
-        #params = []
-        orig_red = cv2.imread(file,0)
-        shape_red = orig_red.shape
-        red_chan = cv2.resize(orig_red, (512,512))
-        
-        # centrosymmetric structure
-        labeled_array, num_features_r = label(peaker(*works_for_both(red_chan)))
-        uniq_vals = np.unique(labeled_array.flatten())
+            #print(np.nonzero(labeled_array))
+            print("red", num_features_r)
 
-        #print(np.unique(labeled_array.flatten())!=0)
-        ## for the cases where the bacteria is layered on top of each other 
-        for val in uniq_vals[uniq_vals!=0]:
-            idxs = np.argwhere(labeled_array==val)
-            start_point = idxs[0]
-            end_point = idxs[-1]
-            anchor_point = start_point + (end_point-start_point)//2
-            area = len(np.argwhere(labeled_array==val))
-            region_red[f"region_{counter_red}"] = []
-            # areas taken up, starting point of area, last coordinate of area, anchor_point, area in amount of px-s
-            region_red[f"region_{counter_red}"].extend([idxs, start_point, end_point, anchor_point, area])
-            counter_red+=1
+        elif "green" in file: 
+            counter_mat_g+=1
+            orig_green = cv2.imread(file,0)
+            shape_green = orig_green.shape
 
-        #print(np.nonzero(labeled_array))
-        print("red", num_features_r)
+            green_chan = cv2.resize(orig_green, (512,512))
+            labeled_array, num_features_g = label(peaker(*works_for_both(green_chan, trans_col[counter_mat_g-1])))
+            print("green", num_features_g)
+            uniq_vals = np.unique(labeled_array.flatten())
 
-    elif "green" in file: 
-        orig_green = cv2.imread(file,0)
-        shape_green = orig_green.shape
-        green_chan = cv2.resize(orig_green, (512,512))
-        labeled_array, num_features_g = label(peaker(*works_for_both(green_chan)))
-        print("green", num_features_g)
-        uniq_vals = np.unique(labeled_array.flatten())
+            #print(np.unique(labeled_array.flatten())!=0)
+            #for the cases where the bacteria is layered on top of each other - in dev
+            for val in uniq_vals[uniq_vals!=0]:
+                idxs = np.argwhere(labeled_array==val)
+                start_point = idxs[0]
+                end_point = idxs[-1]
+                anchor_point = start_point + (end_point-start_point)//2
+                area = len(np.argwhere(labeled_array==val))
+                region_green[f"region_{counter_green}"] = []
+                region_green[f"region_{counter_green}"].extend([idxs, start_point, end_point, anchor_point, area])
+                counter_green+=1
 
-        #print(np.unique(labeled_array.flatten())!=0)
-        ## for the cases where the bacteria is layered on top of each other 
-        for val in uniq_vals[uniq_vals!=0]:
-            idxs = np.argwhere(labeled_array==val)
-            start_point = idxs[0]
-            end_point = idxs[-1]
-            anchor_point = start_point + (end_point-start_point)//2
-            area = len(np.argwhere(labeled_array==val))
-            region_green[f"region_{counter_green}"] = []
-            region_green[f"region_{counter_green}"].extend([idxs, start_point, end_point, anchor_point, area])
-            counter_green+=1
 
         # breaking the loop when reached the end of the file list 
         # else: 
@@ -262,7 +310,9 @@ for f in natsorted(list(set(FIL_FILES))):
 
 #print(regions)
 print("time it took: ", time.time()-start_time)
-print(bac_counting)
+print("merged_red", label(base_im_r)[1])
+print("merged green", label(base_im_g)[1])
+#print(bac_counting)
 
 
 

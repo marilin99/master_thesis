@@ -23,16 +23,16 @@ TARGET_PATH = "/home/marilin/Documents/ESP/data/FM_SYTO_conversion/"
 FILES = os.listdir(PATH) 
 
 FIN = []
-#FIN = ["/home/marilin/Documents/ESP/data/FM_SYTO/PCL_PEO_fibers_FM_syto_8.czi"]
+#FIN = ["/home/marilin/Documents/ESP/data/FM_SYTO/PCL_fibers_FM_syto_9.czi"]
 for f in FILES:
     # in case there is a supportive txt file or other format in the folder
     if "czi" in f:
         file = PATH + f
         FIN.append(file)
 
-        print(f)
+#         print(f)
 #print(FIN)
-#for file in FIN:
+# for file in FIN:
 
         aics = AICSImage(file)
 
@@ -54,19 +54,26 @@ for f in FILES:
         # assertion that the aics module physical_pixel_sizes() works 
         assert(round(scale_x, 8) == round(sanity_x, 8) and round(scale_y, 8) == round(sanity_y, 8))
 
+        detect_xml = metadatadict_czi['ImageDocument']['Metadata']['Experiment']['ExperimentBlocks']['AcquisitionBlock']['MultiTrackSetup']['TrackSetup']['Detectors']['Detector']
         # conditioning for general struc where the transmission channel is the last one - assuming the pmt structure
-        if metadatadict_czi['ImageDocument']['Metadata']['Experiment']['ExperimentBlocks']['AcquisitionBlock']['MultiTrackSetup']['TrackSetup']['Detectors']['Detector'][0]['Name'] != '':
-            for i in range(2):
-                ch_n_hex_color = metadatadict_czi['ImageDocument']['Metadata']['Experiment']['ExperimentBlocks']['AcquisitionBlock']['MultiTrackSetup']['TrackSetup']['Detectors']['Detector'][i]['Color']
-                # lime is not suited with the next piece of code - possibly need some more color conditioning on this side in the future 
-                if webcolors.hex_to_name(ch_n_hex_color) == "lime":
-                    colors.append("green")
-                else:
-                    colors.append(webcolors.hex_to_name(ch_n_hex_color))
-
+        if detect_xml[0]['Name'] != '':
+            
+            # wrongly assuming the first two channels are correct (could have a combination of Ch1, ChS1, Ch2 etc.) - can check the length of the detectors and iterate through - regex
+            for i in range(len(detect_xml)):
+                if "ChS*" and "T PMT" not in detect_xml[i]['ImageChannelName']:
+                    ch_n_hex_color = detect_xml[i]['Color']
+                    # lime is not suited with the next piece of code - possibly need some more color conditioning on this side in the future 
+                    if webcolors.hex_to_name(ch_n_hex_color) == "lime":
+                        colors.append("green")
+                    # blue ch not needed in this case study - autofluor from fibers probs 
+                    elif webcolors.hex_to_name(ch_n_hex_color) == "blue":
+                        continue
+                    else:
+                        colors.append(webcolors.hex_to_name(ch_n_hex_color))
+                    print(webcolors.hex_to_name(ch_n_hex_color))
     
             ##### debugging area #####
-            # print(metadatadict_czi['ImageDocument']['Metadata']['Experiment']['ExperimentBlocks']['AcquisitionBlock']['MultiTrackSetup']['TrackSetup']['Detectors']['Detector'])
+            #print(len(metadatadict_czi['ImageDocument']['Metadata']['Experiment']['ExperimentBlocks']['AcquisitionBlock']['MultiTrackSetup']['TrackSetup']['Detectors']['Detector']))
             # print(aics.get_xarray_stack().shape)  # I,T,C,Z,Y,X
             # print(aics.dims)
             # print(colors)
@@ -80,7 +87,7 @@ for f in FILES:
             
                 # reshaping I,T,C,Y,X to Y,X,C,I,T 
                 np_arr = arr1.to_numpy().astype(np.uint8).transpose(1,2,0)
-                
+              
                 # only for pmt struc
                 # 3 channel behavior
                 if np_arr.shape[-1] == 3:
@@ -89,6 +96,8 @@ for f in FILES:
                 else: 
                     # metadata specific 
                     if metadatadict_czi['ImageDocument']['Metadata']['Experiment']['ExperimentBlocks']['AcquisitionBlock']['MultiTrackSetup']['TrackSetup']['Detectors']['Detector'][1]['Name'] == '':
+                        # sometimes green, red 
+                        # sth fishy in pcl_
                         (ch1,_,ch2,T) = cv2.split(np_arr)
 
                 # for merging purposes 

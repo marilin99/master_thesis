@@ -128,15 +128,15 @@ def peaker(data,ty):
     counter+=1
     return detected_peaks
 
-## SYTO-PI case study ##
-## Q1: What is % of bacterial cells that stain with PI - red (dead cells) - green/red ratio?
-## Q2: Is there a difference in bacterial viability depending on fiber material? - this is only about PCL-PEO I think
+## FM-SYTO case study ##
+## Q1: What is % of bacterial cells (prestained with FM4-64) that stain with SYTO-9 red/green ratio?
+## Q2: Is there a difference between fiber material (hypothesis: addition of PEO to fibers will make them more permeabel and more bacteria stain with syto-9)? 
 
 ## check what is in the folder - unique names - no growth fibers, 24h fibers, control 
 start_time = time.time()
 
 # one stack of 24h growth 
-PATH = "/home/marilin/Documents/ESP/data/SYTO_PI_conversion/"
+PATH = "/home/marilin/Documents/ESP/data/FM_SYTO_conversion/"
 FILES = os.listdir(PATH) 
 region_red = {}
 region_green = {}
@@ -166,19 +166,22 @@ global_core_name = None
 # adding a pseudo file to mark the end of the list 
 FIL_FILES.append("_".join((natsorted(list(set(FIL_FILES)))[-1]).split("_")[:-3])+"_zzz.png")
 
+#print(FILES)
+#for f in natsorted(FILES):
 # using set to remove duplicates 
 for f in natsorted(list(set(FIL_FILES))):
 
-    #if f.startswith("stack_fibers_24h_growth_syto_PI"):
-       
+    #if f.startswith("control_bac_FM") and f.endswith("png"):
+
+    #print(f)
     file = PATH+f
     core_name = "_".join(f.split("_")[:-2])
+    
+    # gathering data and resetting after every new set of stacks, considering first round
 
-        # gathering data and resetting after every new set of stacks, considering first round
- 
     if core_name != global_core_name:
         if global_core_name != None:
-            print(core_name)
+            #print(core_name)
             bac_counting[f"{global_core_name}_red"] = label(base_im_r)[1]
             bac_counting[f"{global_core_name}_green"] = label(base_im_g)[1]
 
@@ -198,12 +201,12 @@ for f in natsorted(list(set(FIL_FILES))):
         # resetting var name
         global_core_name = core_name
 
-  
-        # final case
-  
-        # global_core_name!= None and ("_".join(global_core_name.split("_")[:-1])+"_"+str(int(global_core_name.split("_")[-1])+1)) not in unique_files:
- 
-    #print(file)
+
+    # final case
+
+    # global_core_name!= None and ("_".join(global_core_name.split("_")[:-1])+"_"+str(int(global_core_name.split("_")[-1])+1)) not in unique_files:
+
+#print(file)
     if "red" in file: 
         #params = []
         orig_red = cv2.imread(file,0)
@@ -262,6 +265,8 @@ for f in natsorted(list(set(FIL_FILES))):
 
 #print(regions)
 print("time it took: ", time.time()-start_time)
+# print("amount of reds", label(base_im_r)[1])
+# print("amount of greens", label(base_im_g)[1])
 print(bac_counting)
 
 

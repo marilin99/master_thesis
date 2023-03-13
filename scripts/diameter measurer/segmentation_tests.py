@@ -153,7 +153,7 @@ import scipy.ndimage as ndimage
 #divide = cv2.divide(data, blur, scale=150)
 
 #edged = cv2.Canny(cl2, 140, 250)
-
+# consider bilateral filter
 gray = cv2.GaussianBlur(data, (5,5), 0)
 # laplacian 
 dst = cv2.Laplacian(gray,cv2.CV_16S, ksize=3)
