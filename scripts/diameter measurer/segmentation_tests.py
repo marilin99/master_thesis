@@ -7,11 +7,20 @@ from skimage import segmentation, color, io
 from skimage.future import graph
 from skimage.segmentation import felzenszwalb, mark_boundaries
 from skimage.util import img_as_float
+from scipy import ndimage
+from scipy.ndimage import * 
+from scipy.ndimage.morphology import generate_binary_structure
+import skimage.morphology 
 
 #img = '/home/marilin/Documents/ESP/data/SYTO_PI/control_50killed_syto_PI_2-Image Export-02_c1-3.jpg'
-img = "/home/marilin/Documents/ESP/data/SEM/EcN_II_PEO_131120_GML_15k_01.tif"
+img = "/home/marilin/Documents/ESP/data/SEM/EcN_II_PEO_131120_GML_15k_03.tif"
+unet_img = "/home/marilin/Documents/ESP/data/unet_test/unet3_image_0.6.png"
+edged_img = "/home/marilin/Documents/ESP/data/unet_test/edged_15_03.png"
 
-data = cv2.imread(img, 0)[:650, :]
+data = cv2.imread(img, 0) #[:650, :]
+unet_data = cv2.imread(unet_img, 0) 
+edged_data = cv2.imread(edged_img, 0) 
+
 #img = cv2.cvtColor(sample_image,cv2.COLOR_BGR2HSV)
 
 # ### k means segmentation 
@@ -128,23 +137,27 @@ import scipy.ndimage as ndimage
 
 #gray = cv2.GaussianBlur(data, (7,7), 0)
 #gray = cv2.blur(data, (5,5))
-# clahe2 = cv2.createCLAHE(tileGridSize=(20,20), clipLimit=1) #clipLimit=1, 
-# cl2 = clahe2.apply(gray)
 
-#result = ndimage.gaussian_gradient_magnitude((cl2).astype(float), sigma=1).astype(np.uint8)
+gray = cv2.bilateralFilter(data, 5, 6, 16.0)
 
-#pwr2 = 5
-# green maxima won't help 
-# if pwr = 1, th = 80
-#result_pwr = np.uint8((np.float128(cl2)**pwr2 / np.amax(np.float128(cl2)**pwr2) ) * 255)
+clahe2 = cv2.createCLAHE(tileGridSize=(20,20), clipLimit=1) #clipLimit=1, 
+cl2 = clahe2.apply(gray)
+
+result = ndimage.gaussian_gradient_magnitude((cl2).astype(float), sigma=1).astype(np.uint8)
+#result[result>1] = 255
+# pwr2 = 5
+result2 = ndimage.gaussian_gradient_magnitude((gray).astype(float), sigma=1).astype(np.uint8)
+
+
+# result_pwr = np.uint8((np.float128(cl2)**pwr2 / np.amax(np.float128(cl2)**pwr2) ) * 255)
+
 #_, thresh_gr = cv2.threshold(result_pwr, 80, 255,cv2.THRESH_TOZERO)
 
 # image denoising - wavelet filter daubechies (used for texture/surface/denoising) - 8 scaling coeff, M = 2,
 # import mahotas as mh
 # t = mh.daubechies(cl2, 'D2', inline=False)
 
-# end_im = cl2-t
-# multiway pca 
+
 
 #blur = cv2.GaussianBlur(cl2, (0,0), sigmaX=10, sigmaY=10)
 
@@ -154,12 +167,14 @@ import scipy.ndimage as ndimage
 
 #edged = cv2.Canny(cl2, 140, 250)
 # consider bilateral filter
-gray = cv2.GaussianBlur(data, (5,5), 0)
-# laplacian 
-dst = cv2.Laplacian(gray,cv2.CV_16S, ksize=3)
 
-# converting back to uint8
-abs_dst = cv2.convertScaleAbs(dst)
+# gray = cv2.bilateralFilter(data, 5, 12.0, 16.0)
+# #gray = cv2.GaussianBlur(data, (5,5), 0)
+# # laplacian 
+# dst = cv2.Laplacian(gray,cv2.CV_16S, ksize=3)
+
+# # converting back to uint8
+# abs_dst = cv2.convertScaleAbs(dst)
 
 # import os 
 # for k, v in os.environ.items():
@@ -177,27 +192,86 @@ abs_dst = cv2.convertScaleAbs(dst)
 
 
 # step thresholder
-#_, thresh = cv2.threshold(cl2, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-_, thresh = cv2.threshold(abs_dst, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-
-# merged = cv2.bitwise_and(result_pwr, thresh)
-
-# median = cv2.medianBlur(merged, 3)
-# #new_m = cv2.bitwise_or(data, median)
-# #gradient thresholder - canny / sobel 
+_, thresh1 = cv2.threshold(cl2, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+_, thresh2 = cv2.threshold(result2, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 
 
-# kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
-# morph = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+#merged = cv2.bitwise_and(thresh1, unet_data)
+merged = cv2.erode(thresh1, None, iterations=4)
+merged = cv2.dilate(merged, None, iterations=4)
+merged = cv2.medianBlur(merged, 5)
+#merged = cv2.erode(merged, None, iterations=1)
+unet_data = cv2.medianBlur(merged, 15)
 
+thinned = skimage.morphology.medial_axis(unet_data).astype(np.uint8)
+thinned[thinned == 1] = 255
+
+#kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
+#merged = cv2.morphologyEx(thresh1, cv2.MORPH_GRADIENT, kernel, iterations=3)
+
+# merged = cv2.cvtColor(cv2.bitwise_not(merged), cv2.COLOR_GRAY2BGR)
+
+# # white values to red 
+# merged[np.where((merged==[255, 255, 255]).all(axis=2))] = [0, 0, 255]
+# #rgb_edges[rgb_edges == (255,255,255)] = (255,0,0)
+
+# #print(rgb_edges.shape)
+# edged_data = cv2.cvtColor(edged_data, cv2.COLOR_GRAY2BGR)
+# # adding the edges to the black and red image and converting to grayscale
+# merged2 = cv2.cvtColor(cv2.bitwise_or(edged_data, merged), cv2.COLOR_BGR2GRAY)
+
+# #print(np.unique(merged2))
+
+# #labeled_array, num_features = label(merged2, structure = generate_binary_structure(2,2))
+
+# print(np.where(merged2==255))
+
+# #print(np.bincount(labeled_array.ravel()))
+
+# #print(np.unique(labeled_array))
+# ## removing redundant whites/blacks in gray 
+
+# for _ in range(2):
+#     for i in range(merged2.shape[0]):
+#         for j in range(merged2.shape[1]):
+#             if merged2[i][j] == 0:
+#                 try:
+#                     if (merged2[i][j-1] == 76 and merged2[i][j+1] == 76) or (merged2[i-1][j] == 76 and merged2[i+1][j] == 76):  #or (merged2[i][j-1] == 76 and merged2[i][j+1] == 0) \
+#                         #or (merged2[i-1][j] == 76 and merged2[i][j+1] == 0):
+
+#                         merged2[i][j] = 76
+#                 except:
+#                     continue
+
+
+# merged2[merged2 == 255] = 0
+# merged2[merged2 == 76] = 255
+# #merge
+
+# merged2 = cv2.cvtColor(merged2, cv2.COLOR_GRAY2BGR)
+# merged2 -= edged_data
+#merged2 -= cv2.cvtColor(edged_data, cv2.COLOR_BGR2GRAY)
+
+# thinned = skimage.morphology.medial_axis(cv2.bitwise_not( cv2.cvtColor(merged2, cv2.COLOR_BGR2GRAY))).astype(np.uint8)
+# thinned[thinned == 1] = 255
+
+## expected
+# PATH_1 = cv2.imread("/home/marilin/Documents/ESP/diameterJ_test/sem_test/Segmented Images/EcN_II_PEO_131120_GML_15k_01_S1_reverse.tif",0)[:650, :]
+
+# thinned = skimage.morphology.medial_axis(PATH_1).astype(np.uint8)
+# thinned[thinned == 1] = 255
 
 ### visuals 
 #cv2.imshow('result', np.uint8(morph))
 cv2.imshow('original', data)
-# cv2.imshow("median", median)
-cv2.imshow("new_m", thresh)
-# cv2.imshow('clahe', cl2)
-cv2.imshow("lap", abs_dst)
+#cv2.imshow("median", median)
+#cv2.imshow("thresh", thresh1)
+cv2.imshow("unet im", unet_data)
+#cv2.imshow("merged2", merged2)
+cv2.imshow("merged", merged)
+#cv2.imshow("edge data", edged_data)
+cv2.imshow('thinned', thinned)
+
 #cv2.imshow('end im', result_pwr)
 cv2.waitKey(0)
 cv2.destroyAllWindows()

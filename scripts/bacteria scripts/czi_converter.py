@@ -20,8 +20,9 @@ import webcolors
 
 PATH = "/home/marilin/Documents/ESP/data/FM_SYTO/" #, "/home/marilin/Documents/ESP/data/FM_SYTO/"]  # change this once files in the network server
 TARGET_PATH = "/home/marilin/Documents/ESP/data/FM_SYTO_conversion/"
+#TARGET_PATH = "/home/marilin/Documents/ESP/data/FM_SYTO_conversion_test/"
 FILES = os.listdir(PATH) 
-
+#FILES = ["PCL_PEO_fibers_FM_syto_4.czi"]
 FIN = []
 #FIN = ["/home/marilin/Documents/ESP/data/FM_SYTO/PCL_fibers_FM_syto_9.czi"]
 for f in FILES:
@@ -29,11 +30,10 @@ for f in FILES:
     if "czi" in f:
         file = PATH + f
         FIN.append(file)
-
 #         print(f)
 #print(FIN)
-# for file in FIN:
-
+#for file in FIN:
+        
         aics = AICSImage(file)
 
         ##### czi global metadata collection #####
@@ -62,6 +62,7 @@ for f in FILES:
             for i in range(len(detect_xml)):
                 if "ChS*" and "T PMT" not in detect_xml[i]['ImageChannelName']:
                     ch_n_hex_color = detect_xml[i]['Color']
+        
                     # lime is not suited with the next piece of code - possibly need some more color conditioning on this side in the future 
                     if webcolors.hex_to_name(ch_n_hex_color) == "lime":
                         colors.append("green")
@@ -70,7 +71,7 @@ for f in FILES:
                         continue
                     else:
                         colors.append(webcolors.hex_to_name(ch_n_hex_color))
-                    print(webcolors.hex_to_name(ch_n_hex_color))
+                    #print(webcolors.hex_to_name(ch_n_hex_color))
     
             ##### debugging area #####
             #print(len(metadatadict_czi['ImageDocument']['Metadata']['Experiment']['ExperimentBlocks']['AcquisitionBlock']['MultiTrackSetup']['TrackSetup']['Detectors']['Detector']))
@@ -97,7 +98,7 @@ for f in FILES:
                     # metadata specific 
                     if metadatadict_czi['ImageDocument']['Metadata']['Experiment']['ExperimentBlocks']['AcquisitionBlock']['MultiTrackSetup']['TrackSetup']['Detectors']['Detector'][1]['Name'] == '':
                         # sometimes green, red 
-                        # sth fishy in pcl_
+                     
                         (ch1,_,ch2,T) = cv2.split(np_arr)
 
                 # for merging purposes 

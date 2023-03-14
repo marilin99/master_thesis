@@ -8,6 +8,10 @@ import skimage.morphology
 from scipy.spatial import distance
 from scipy import stats
 import time 
+from plantcv import plantcv as pcv
+import math 
+from scipy import ndimage
+from scipy.ndimage import * 
 
 start_time = time.time()
 # this was a thresholded image which has been filled in with pinta for cont. purposes - getting a clean img is still an issue (12.01)
@@ -58,6 +62,27 @@ dist = cv2.distanceTransform(PATH_1, cv2.DIST_L2, 3)
 
 thinned = skimage.morphology.medial_axis(PATH_1).astype(np.uint8)
 thinned[thinned == 1] = 255
+
+#### pre-processing of the thinned image ####
+
+# removing skeleton hairs - https://plantcv.readthedocs.io/en/stable/prune/
+pruned_skeleton, segmented_img, segment_objects = pcv.morphology.prune(skel_img=thinned, size=50)
+
+# removing ind floating areas from skeleton 
+object_map, count = ndimage.label(pruned_skeleton, structure = generate_binary_structure(2,2))
+
+def pixelcount(regionmask):	return np.sum(regionmask)
+props = skimage.measure.regionprops(object_map, extra_properties=(pixelcount,))
+
+idxs = np.argwhere(np.array([props[val].pixelcount for val in range(len(props))]) == 1).ravel()
+for val in idxs:	object_map[object_map == val] = 0 
+
+object_map[object_map != 0] = 255
+
+thinned = np.uint8(object_map)
+
+################################
+
 h,w = PATH_1.shape[0],PATH_1.shape[1]
 n2 = int(np.ceil(np.max(dist)))
 n = 13
@@ -687,8 +712,11 @@ def dm_finder(pt_s, n,n2,thinned):
 
                
                px_dist = dist[x_new][y_new]
+
                # values of this image from scale_obtain.py 
                nano_per_px = 400 / 22
+               
+               # extra condition in case of marker starting at a pointer
                dm = int(2 * px_dist * nano_per_px)
                #dm_s.append((x, y, x_new, y_new, dm, winners))
                dm_s.append(dm)
