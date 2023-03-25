@@ -13,33 +13,15 @@ from scipy import ndimage
 from scipy.ndimage import * 
 
 # https://pyimagej.readthedocs.io/en/latest/Initialization.html
-PATH_1 = "/home/marilin/Documents/ESP/data/SEM/EcN_II_PEO_131120_GML_15k_03.tif"
 
-# plugins_dir = '/home/marilin/Documents/ESP/diameterJ_test/ImageJ/plugins/DiameterJ/'
+#PATH_1 = "/home/marilin/Documents/ESP/data/SEM/EcN_II_PEO_131120_GML_15k_03.tif"
 
-# sj.config.add_option(f'-Dplugins.dir={plugins_dir}')
-
-# ij = imagej.init('sc.fiji:fiji')
-# #ij = imagej.init()
-
-# # load a sample image
-# image = ij.io().open(PATH_1)
-
-# if ij.WindowManager.getIDList() is None:
-#     ij.py.run_macro('newImage("dummy", "8-bit", 1, 1, 1);')
-
-# # imageplus 
-# imp = ij.py.to_imageplus(image)
-# imp.setTitle("imp_fib")
+# test set 1 (22.03)
+PATH = "/home/marilin/Documents/ESP/data/fiber_tests/original_img/"
+TARGET_PATH =  "/home/marilin/Documents/ESP/data/fiber_tests/segmented_img_class/"
+FILES = os.listdir(PATH) 
 
 
-
-# ### USING ONLY IJ2
-# tHuang = ij.op().threshold().huang(image)
-# # converting to numpy
-# np_thuang = ij.py.from_java(tHuang)
-
-#print((np_thuang).shape)
 ###### huang func in py 
 
 # https://github.com/dnhkng/Huang-Thresholding/blob/master/analysis.py
@@ -97,61 +79,67 @@ def huang(data):
     return threshold
 
 ### NUMPY part #####
+for f in FILES: 
+	#print(file)
+	file = PATH+f
+	img_data = cv2.imread(file, 0)
 
-img_data = cv2.imread(PATH_1, 0)
+	# kuwahara filter 
+	kuwahara_img = kuwahara(img_data, method='mean', radius=2)
 
-# kuwahara filter 
-kuwahara_img = kuwahara(img_data, method='mean', radius=2)
-
-histogram, bin_edges = np.histogram(kuwahara_img, bins=range(256))
-huang_th = huang(histogram)
-np_thuang = np.where(img_data > huang_th, 1, 0)
-
-
-# for k, v in os.environ.items():
-# 	if k.startswith("QT_") and "cv2" in v:
-# 	    del os.environ[k]
-
-threshold = cv2.erode(np.uint8(np_thuang),None, iterations=3)
-merged = cv2.dilate(threshold,None, iterations=3)
-
-merged = np.uint8(cv2.medianBlur(np.uint8(np_thuang), 15)) 
-merged[merged>0] = 255
+	histogram, bin_edges = np.histogram(kuwahara_img, bins=range(256))
+	huang_th = huang(histogram)
+	np_thuang = np.where(img_data > huang_th, 1, 0)
 
 
-########
+	# for k, v in os.environ.items():
+	# 	if k.startswith("QT_") and "cv2" in v:
+	# 	    del os.environ[k]
 
-#PATH_2 = cv2.imread("/home/marilin/Documents/ESP/data/unet_test/unet3_image_0.6.png",0)[:650, :]
+	threshold = cv2.erode(np.uint8(np_thuang),None, iterations=3)
+	merged = cv2.dilate(threshold,None, iterations=3)
 
-thinned = skimage.morphology.medial_axis(merged).astype(np.uint8)
-thinned[thinned == 1] = 255
+	merged = np.uint8(cv2.medianBlur(np.uint8(np_thuang), 15)) 
+	merged[merged>0] = 255
+    
+	# saving tmp object map to folder 
+	cv2.imwrite(f"{TARGET_PATH}{f}.png", np.uint8(merged))
 
-# removing skeleton hairs - https://plantcv.readthedocs.io/en/stable/prune/
-pruned_skeleton, segmented_img, segment_objects = pcv.morphology.prune(skel_img=thinned, size=50)
+	########
 
-object_map = pruned_skeleton
+	#PATH_2 = cv2.medianBlur(cv2.imread("/home/marilin/Documents/ESP/data/unet_test/unet3_image_0.6.png",0), 15)
 
-#removing ind floating areas from skeleton (8-component neighborhood)
-object_map, count = ndimage.label(pruned_skeleton, structure = generate_binary_structure(2,2))
+	# thinned = skimage.morphology.medial_axis(merged).astype(np.uint8)
+	# thinned[thinned == 1] = 255
 
-def pixelcount(regionmask):	return np.sum(regionmask)
-props = skimage.measure.regionprops(object_map, extra_properties=(pixelcount,))
+	# # removing skeleton hairs - https://plantcv.readthedocs.io/en/stable/prune/
+	# pruned_skeleton, segmented_img, segment_objects = pcv.morphology.prune(skel_img=thinned, size=50)
 
-idxs = np.argwhere(np.array([props[val].pixelcount for val in range(len(props))]) == 1).ravel()
-for val in idxs:	object_map[object_map == val] = 0 
+	# object_map = pruned_skeleton
 
-object_map[object_map != 0] = 255
+	# #removing ind floating areas from skeleton (8-component neighborhood)
+	# object_map, count = ndimage.label(pruned_skeleton, structure = generate_binary_structure(2,2))
+
+	# def pixelcount(regionmask):	return np.sum(regionmask)
+	# props = skimage.measure.regionprops(object_map, extra_properties=(pixelcount,))
+
+	# idxs = np.argwhere(np.array([props[val].pixelcount for val in range(len(props))]) == 1).ravel()
+	# for val in idxs:	object_map[object_map == val] = 0 
+
+	# object_map[object_map != 0] = 255
+        
+	# saving tmp object map to folder 
 
 
 ###### visuals ######
 
 # cv2.imshow('segmented im', merged)
 # cv2.imshow('orig im', img_data)
-cv2.imshow('thinned orig', thinned)
-# cv2.imshow('kuwahara', kuwahara_img)
-cv2.imshow('thinned im', np.uint8(object_map))
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# cv2.imshow('thinned orig', thinned)
+# # cv2.imshow('kuwahara', kuwahara_img)
+# cv2.imshow('thinned im', np.uint8(object_map))
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
 
 ####################
 

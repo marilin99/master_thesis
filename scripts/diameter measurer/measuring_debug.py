@@ -1,5 +1,3 @@
-##### this script is for batch testing purposes #### 
-
 from scipy import ndimage
 from scipy.ndimage import *
 import cv2
@@ -14,23 +12,13 @@ from plantcv import plantcv as pcv
 import math 
 from scipy import ndimage
 from scipy.ndimage import * 
-import os
 
-## helper functions
-from scale_obtain import scale_obtain 
-
-
+start_time = time.time()
 # this was a thresholded image which has been filled in with pinta for cont. purposes - getting a clean img is still an issue (12.01)
 orig = cv2.imread("/home/marilin/Documents/ESP/data/SEM/EcN_II_PEO_131120_GML_15k_01.tif",0)[:650, :]
 
 # this image is segmented using statistical region merging from diameterj imagej - from 650 is the scale box 
-#PATH_1 = cv2.imread("/home/marilin/Documents/ESP/diameterJ_test/sem_test/Segmented Images/EcN_II_PEO_131120_GML_15k_01_S1_reverse.tif",0)[:650, :]
-
-TARGET_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/results/"
-PATH =  "/home/marilin/Documents/ESP/data/fiber_tests/segmented_img_class/"
-FILES = os.listdir(PATH) 
-
-# omitting the scale area from the image
+PATH_1 = cv2.imread("/home/marilin/Documents/ESP/data/fiber_tests/segmented_img_class/Lactis_PEO_111220_2k07.tif.png",0) #[:650, :]
 
 #### helper functions ####
 
@@ -68,55 +56,49 @@ def find_nearest_whites(img, origin):
 
 # make this px as the center of a 13x13 kernel - sanity check and for choosing the direction of the regression line
 
-# for f in FILES:
-#      PATH_1 = PATH+f
-
-def thinner(PATH_1):
-     dist = cv2.distanceTransform(PATH_1, cv2.DIST_L2, 3)
-
-     thinned = skimage.morphology.medial_axis(PATH_1).astype(np.uint8)
-     thinned[thinned == 1] = 255
-
-     #### pre-processing of the thinned image ####
-
-     # removing skeleton hairs - https://plantcv.readthedocs.io/en/stable/prune/
-     pruned_skeleton, segmented_img, segment_objects = pcv.morphology.prune(skel_img=thinned, size=50)
+np.random.seed(42)
+dist = cv2.distanceTransform(PATH_1, cv2.DIST_L2, 3)
 
 
-     thinned = np.uint8(pruned_skeleton)
+thinned = skimage.morphology.medial_axis(PATH_1).astype(np.uint8)
+thinned[thinned == 1] = 255
 
-     ### white speck removal ### erroneous
-     # removing ind floating areas from skeleton 
-     # object_map, count = ndimage.label(pruned_skeleton, structure = generate_binary_structure(2,2))
+#### pre-processing of the thinned image ####
 
-     # def pixelcount(regionmask):	return np.sum(regionmask)
-     # props = skimage.measure.regionprops(object_map, extra_properties=(pixelcount,))
+# removing skeleton hairs - https://plantcv.readthedocs.io/en/stable/prune/
+pruned_skeleton, segmented_img, segment_objects = pcv.morphology.prune(skel_img=thinned, size=50)
 
-     # idxs = np.argwhere(np.array([props[val].pixelcount for val in range(len(props))]) == 1).ravel()
-     # for val in idxs:	object_map[object_map == val] = 0 
+thinned = np.uint8(pruned_skeleton)
+# # removing ind floating areas from skeleton 
+#object_map, count = ndimage.label(pruned_skeleton, structure = generate_binary_structure(2,2))
 
-     # object_map[object_map != 0] = 255
+# def pixelcount(regionmask):	return np.sum(regionmask)
+# props = skimage.measure.regionprops(object_map, extra_properties=(pixelcount,))
 
-     # thinned = np.uint8(object_map)
+# object 
+#print(np.unique(object_map))
 
-     return dist, thinned
+# all areas that have just one white speck will be removed 
+#print([props[val].pixelcount for val in range(len(props))])
+
+# idxs = np.argwhere(np.array([props[val].pixelcount for val in range(len(props))]) == 1).ravel()
+# for val in idxs:	object_map[object_map == val] = 0 
+
+# object_map[object_map != 0] = 255
+
+# thinned = np.uint8(object_map)
 
 ################################
 
+h,w = PATH_1.shape[0],PATH_1.shape[1]
+n2 = int(np.ceil(np.max(dist)))
+n = 13
 
-# h,w = PATH_1.shape[0],PATH_1.shape[1]
-# n2 = int(np.ceil(np.max(dist)))
-# n = 13
+coords = []
+# collecting exceptions w x,y and "winners"
+exc_cases = []
 
-# coords = []
-# # collecting exceptions w x,y and "winners"
-# exc_cases = []
-
-def point_picker(PATH_1, amount_of_points):
-     # temp seed
-     np.random.seed(42)
-     coords = []
-
+def point_picker(n2):
      while True:
           rnd_idx = np.random.randint(0, (len(np.where(PATH_1 > 0)[0])), 1)
           x, y = np.where(PATH_1 > 0)[0][rnd_idx][0], np.where(PATH_1 > 0)[1][rnd_idx][0]
@@ -147,11 +129,11 @@ def point_picker(PATH_1, amount_of_points):
           if (U == 0 and L == 0) ^ (U == 0 and R == 0) ^ (B == 0 and L == 0) ^ (B == 0 and R == 0):
           #if (U == 0 and L == 0) or (U == 0 and R == 0) or (B == 0 and L == 0) or (B == 0 and R == 0):
           # uniqueness (was one pair at 1000 points)
-               #if (x,y) not in coords:
+               # if (x,y) not in coords:
                coords.append((x,y))
 
           # amount of points chosen
-          if len(coords) == amount_of_points:
+          if len(coords) == 100:
                break
           
 
@@ -179,7 +161,7 @@ def point_picker(PATH_1, amount_of_points):
 
 #coords = [(109,139), (514,828), (138, 341), (470,352), (382,315), (516,827)]
 
-def dm_finder(pt_s, n, n2, thinned, nano_per_px):
+def dm_finder(pt_s, n,n2,thinned):
      dm_s = []
      exc_cases = []
 # #print(coords)
@@ -737,12 +719,14 @@ def dm_finder(pt_s, n, n2, thinned, nano_per_px):
 
                
                px_dist = dist[x_new][y_new]
+
+               # values of this image from scale_obtain.py 
+               nano_per_px = 400 / 22
                
                # extra condition in case of marker starting at a pointer
                dm = int(2 * px_dist * nano_per_px)
-               if dm != 0:    dm_s.append(dm)
                #dm_s.append((x, y, x_new, y_new, dm, winners))
-               
+               dm_s.append(dm)
                     
                
           except: 
@@ -755,68 +739,70 @@ def dm_finder(pt_s, n, n2, thinned, nano_per_px):
 
           #print(kernel_2)
 
-ORIG_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/original_img/"
+pt_s = point_picker(n2)
+#pt_s = [(5, 1005), (616, 1021), (7, 713), (31, 965), (576, 6), (578, 5), (397, 13), (6, 854), (4, 291), (200, 3), (644, 257), (8, 293), (27, 936), (32, 546), (6, 854), (17, 316), (643, 589), (15, 113), (461, 4)]
+#pt_s = [(545,1)]
+# #print(pt_s)
+first_dm_s, first_excs = dm_finder(pt_s, n,n2,thinned)[0], dm_finder(pt_s, n,n2,thinned)[1]
+#first_dm_s = []
+# print(first_excs)
+# print(first_dm_s)
+#print("length_of_first_dm-s: ", len(first_dm_s))
+# leftovers = []
+# for val in pt_s:
+#      second_dm_s, second_excs = dm_finder([val], n,n2,thinned)[0], dm_finder([val], n,n2,thinned)[1]
+#      if len(second_dm_s) > 0: first_dm_s.append(*second_dm_s)
+#      elif len(second_excs) > 0: leftovers.append(*second_excs)
+     # print("second round of dm-s ", second_dm_s)
+     # print("second round of excs ", second_excs)
 
-for f in FILES:
-     start_time = time.time()
-     PATH_1 = PATH+f
+# print("second round of exceptions: ", len(second_excs))
 
-     print(PATH_1)
+# third_dm_s, third_excs = dm_finder(second_excs, n,n2,thinned)[0], dm_finder(second_excs, n,n2,thinned)[1]
 
-     # leaving the lower part in for now
-     PATH_1 = cv2.imread(PATH_1, 0)
-
-     h,w = PATH_1.shape[0],PATH_1.shape[1]
-
-     dist, thinned = thinner(PATH_1)
-
-     n2 = int(np.ceil(np.max(dist)))
-     n = 13
-
-     pt_s = point_picker(PATH_1, 100)
-
-     # val, unit, px amount - from original image
-     for val in os.listdir(ORIG_PATH):
-          if f.split(".png")[0] in val: 
-               PATH_og = ORIG_PATH+val
-               scales = scale_obtain(PATH_og)
-               print(scales)
-
-               if scales[1] == "um":
-                    nano_per_px = int(scales[0]) * 1000 / int(scales[-1])
-               # scale = nm 
-               elif scales[1] == "nm": 
-                    nano_per_px = int(scales[0]) / int(scales[-1])
-
-     first_dm_s, first_excs = dm_finder(pt_s, n,n2,thinned, nano_per_px)[0], dm_finder(pt_s, n,n2,thinned, nano_per_px)[1]
-
-     ## saving values + time to a txt file ##
-     # splitting from tif assuming that tif is still in the file name
-     core_name = f.split(".tif")[0]
-     with open(f"{TARGET_PATH}{core_name}.txt", "w+") as file:
-          file.write("diameter values")
-          for val in first_dm_s:
-               file.write(f"{val}")
-               file.write("\n")
-          file.write(f"time taken: {time.time() - start_time}")
-     start_time = time.time()
-          
-     for k, v in os.environ.items():
-          if k.startswith("QT_") and "cv2" in v:
-               del os.environ[k]
-            
-     ## saving 5 bin histogram ##
-     plt.hist(first_dm_s, bins = 5)
-     plt.title("Fiber diameter measurements (n=100)")
-     plt.ylabel("Frequency")
-     plt.xlabel("Fiber diameter (nm)")
-     plt.savefig(f"{TARGET_PATH}{core_name}.png")
+# print("third round of exceptions", third_excs)
 
 
-     print(first_dm_s)
-     print(first_excs)
+     # while len(excs) != 0:
+     #      dm_s, excs = dm_finder(excs,n,n2,thinned)[0], dm_finder(excs,n,n2,thinned)[1]
 
+     # print(dm_s)
+     # print(len(dm_s))
 
+     # print("exc", exc_cases)
+     # print(len(exc_cases))
+     # could include it in the function  - this computation is done to ensure that the end selection stays constant no matter the kernel size
+     #continue
+
+print(first_dm_s)
+print(first_excs)
+# #print(len(first_dm_s))
+# #print(leftovers)
+# print("time taken:", time.time() - start_time)
+
+# # histogram creating
+# import os 
+# for k, v in os.environ.items():
+# 	if k.startswith("QT_") and "cv2" in v:
+# 	    del os.environ[k]
+
+# plt.hist(first_dm_s)
+# plt.title("Fiber diameter measurements (n=100)")
+# plt.ylabel("Frequency")
+# plt.xlabel("Fiber diameter (nm)")
+# plt.show()
+
+## for analysis
+
+# with open("dm_info_2.txt", "w+") as file:
+#      for val in first_dm_s:
+#           file.write(f"{val}")
+#           file.write("\n")
+     
+# with open("exc_cases_2.txt", "w+") as file:
+#      for val in leftovers:
+#           file.write(f"{val}")
+#           file.write("\n")
 
 ############################################################
 # polynomial fitting - draw lines against the polynomial to find the most perpendicular one (once a pt is established - needs a tangent and angle between the drawn line and tangent )
@@ -925,7 +911,7 @@ for f in FILES:
 # # # # # # #print(np.count_nonzero(PATH_1))
 # # # # # # #cv2.imshow("direction", theta)
 # # # # # # cv2.imshow("thresh", PATH_1)
-# cv2.imshow("thinned", thinned.astype(np.uint8))
-# cv2.imshow("orig", orig)
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
+cv2.imshow("thinned", thinned.astype(np.uint8))
+cv2.imshow("orig", orig)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
