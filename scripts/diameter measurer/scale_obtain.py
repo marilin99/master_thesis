@@ -10,7 +10,13 @@ import re
 #PATH_1 = "/home/marilin/Documents/ESP/data/SEM/Lactis_PEO_111220_20k04.tif" # 1
 #PATH_1 =  "/home/marilin/Documents/ESP/data/SEM/Lactis_PEO_111220_20k03.tif" # 2 
 #PATH_1 =  "/home/marilin/Documents/ESP/data/SEM/EcN_II_PEO_131120_GML_5k_02.tif" # small scale
-#PATH_1 = "/home/marilin/Documents/ESP/data/SEM/PEO_EcN_I_181220_MM_2k_02.tif"
+
+#PATH_1 = "/home/marilin/Documents/ESP/data/SEM/PEO_EcN_I_181220_MM_2k_02.tif" #10
+#PATH_1 = "/home/marilin/Downloads/1_15_8020_13_3000(2).tif" # thinner font 10 um 
+#PATH_1 = "/home/marilin/Downloads/CE_1_PCL_15KV_121.tif" #thinner font 200 nm
+#PATH_1 = "/home/marilin/Downloads/CE_4_PCL_11KV_61.tif" #thinner font for 2
+#PATH_1 = "/home/marilin/Downloads/PCL_15_11k_ACDCM_5_5_65%_4k_1.tif" # zeiss format not working
+
 #pytesseract.pytesseract.tesseract_cmd =r"C:/Program Files/Tesseract-OCR/tesseract.exe"
 
 # pot_val, pot_unit, scale length in px
@@ -18,25 +24,10 @@ value_unit_scale = []
 # list of units
 pot_units = ["nm", "um"]
 # pot scale values - should be updated if some new scales used!
-pot_values = ["10", "1", "2", "400"]
-
-# trackbar_value = 1
-
-# PATH = "/home/marilin/Documents/ESP/data/fiber_tests/original_img/"
-# TARGET_PATH =  "/home/marilin/Documents/ESP/data/fiber_tests/segmented_img_class/"
-# FILES = os.listdir(PATH) 
-#FILES = ["/home/marilin/Documents/ESP/data/SEM/Lactis_PEO_111220_20k01.tif"]
-
-#PATH_1 = "/home/marilin/Documents/ESP/data/fiber_tests/original_img/EcN_II_PEO_131120_GML_5k_04.tif"
+pot_values = ["10", "1", "2", "400", "200", "3"]
 
 
 def scale_obtain(file):
-    # for f in FILES:
-    #     file = PATH+f
-        #file = f
-    #Working with image files stored in the same folder as .py file
-    #file = PATH_1
-        #Load the image from the given location
      
     img = cv2.imread(file, 0)
     
@@ -46,8 +37,8 @@ def scale_obtain(file):
     ###########################################################################
     # number and unit obtaining 
 
-    thresh = cv2.bitwise_not(cv2.threshold(img, 1, 255, cv2.THRESH_BINARY)[1])
-    
+    thresh = cv2.bitwise_not(cv2.threshold(img, 0, 255, cv2.THRESH_BINARY)[1])
+
     result = img.copy()
     contours = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     #print(contours)
@@ -64,14 +55,37 @@ def scale_obtain(file):
         big_contour = np.array([ [[min(y_coords), max(x_coords)]], [[min(y_coords), min(x_coords)]], [[max(y_coords), min(x_coords)]], [[max(y_coords), max(x_coords)]] ])
 
     cv2.drawContours(result, [big_contour], 0, (255,255,255), 1)
+
+    # cross-section
+    #cv2.imshow("res", result)
+    cross = img[int( (min(x_coords)+ max(x_coords)) //2 ): int( (min(x_coords)+ max(x_coords)) //2 )+1, min(y_coords):max(y_coords)+5]
     
+    # thinner vs thicker font in scale 
+    if np.count_nonzero(cross) < 20: 
+        scalar = 20
+    else:
+        scalar = 30
+
     # extracting unit
-    unit = img[min(x_coords):max(x_coords), max(y_coords)-30:max(y_coords)]
+    unit = img[min(x_coords):max(x_coords), max(y_coords)-scalar:max(y_coords)]
     unit = np.pad(unit, pad_width = [(1, 1),(1, 1)], mode = "constant")
 
+    # if np.count_nonzero(unit) < 100: 
+    #     scalar = 20
+    # else: 
+    #     scalar = 30
+
+
     # extracting number
-    number = img[min(x_coords):max(x_coords), min(y_coords):max(y_coords)-30]
+    number = img[min(x_coords):max(x_coords), min(y_coords):max(y_coords)-scalar]
     number = np.pad(number, pad_width = [(1, 1),(1, 1)], mode = "constant")
+    # print(np.count_nonzero(number))
+
+    # cv2.imshow("unit", unit)
+    # cv2.imshow("number", number)
+
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
     # segmentation technique - one line with many possible char-s
     # https://github.com/madmaze/pytesseract
@@ -79,16 +93,18 @@ def scale_obtain(file):
     custom_config= r'--psm 10' # can provide specific letters/numbers --tessedit_char_whitelist="unm"'
 
     try:
-        for val in range(10, 22, 1):
+        for val in range(10,30, 1):
             detected_nr = str(pytesseract.image_to_string(cv2.resize(cv2.threshold(number, 250, 255, cv2.THRESH_BINARY)[1], (val, val)), config =custom_config, timeout = 2)).split("y\n\x0c")[0].strip() # Timeout after 2 seconds
-            # give letter options 
+            # give nr options 
             if detected_nr in pot_values:
                 value_unit_scale.append(int(detected_nr))
                 counter.append(1)
+
             detected_unit = str(pytesseract.image_to_string(cv2.resize(cv2.threshold(unit, 250, 255, cv2.THRESH_BINARY)[1], (val, val)), config =custom_config, timeout = 2)).split("y\n\x0c")[0].strip() # Timeout after 2 seconds                
             if detected_unit in pot_units:
                 value_unit_scale.append(detected_unit)
                 counter.append(2)
+
             if len(np.unique(counter)) == 2:
                 value_unit_scale = list(np.unique(value_unit_scale))
                 break
@@ -100,7 +116,7 @@ def scale_obtain(file):
     ################################################################
 
     # contouring the scale 
-    th2 = cv2.threshold(img[max(x_coords):, min(y_coords)-5: max(y_coords) + 50], 254, 255, cv2.THRESH_BINARY)[1]
+    th2 = cv2.threshold(img[max(x_coords):, min(y_coords)-5: max(y_coords) + 200], 254, 255, cv2.THRESH_BINARY)[1]
 
     ## line length in pixels
     try:
@@ -111,17 +127,6 @@ def scale_obtain(file):
     except: 
         return None
 
-
-    # cv2.imshow('Original', img)
-    # cv2.imshow("result", thresh)
-        
-
-    
-    #Quit the program when 'q' is pressed
-    # if (cv2.waitKey(1) & 0xFF) == ord('q'):
-    #     cv2.destroyAllWindows()
-    #     break
-    
 
 # cv2.waitKey(0)
 # cv2.destroyAllWindows()

@@ -90,3 +90,8 @@ def classical_segment(file):
 
     # return segmented im 
     return np.uint8(merged)
+
+if __name__ == "__main__":
+    cv2.imshow("class", classical_segment("/home/marilin/Documents/ESP/data/fiber_tests/fiber_test_1/2k_5k_orig_images/EcN_II_PEO_131120_GML_5k_02.tif"))
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
