@@ -6,15 +6,15 @@ import matplotlib.pyplot as plt
 import pytesseract
 import re
 
-#PATH_1 = "/home/marilin/Documents/ESP/data/SEM/EcN_II_PEO_131120_GML_15k_01.tif" # 400
-#PATH_1 = "/home/marilin/Documents/ESP/data/SEM/Lactis_PEO_111220_20k04.tif" # 1
-#PATH_1 =  "/home/marilin/Documents/ESP/data/SEM/Lactis_PEO_111220_20k03.tif" # 2 
-#PATH_1 =  "/home/marilin/Documents/ESP/data/SEM/EcN_II_PEO_131120_GML_5k_02.tif" # small scale
+# PATH_1 = "/home/marilin/Documents/ESP/data/SEM/EcN_II_PEO_131120_GML_15k_01.tif" # 400
+# PATH_1 = "/home/marilin/Documents/ESP/data/SEM/Lactis_PEO_111220_20k04.tif" # 1
+# PATH_1 =  "/home/marilin/Documents/ESP/data/SEM/Lactis_PEO_111220_20k03.tif" # 2 
+# PATH_1 =  "/home/marilin/Documents/ESP/data/SEM/EcN_II_PEO_131120_GML_5k_02.tif" # small scale
 
-#PATH_1 = "/home/marilin/Documents/ESP/data/SEM/PEO_EcN_I_181220_MM_2k_02.tif" #10
-#PATH_1 = "/home/marilin/Downloads/1_15_8020_13_3000(2).tif" # thinner font 10 um 
-#PATH_1 = "/home/marilin/Downloads/CE_1_PCL_15KV_121.tif" #thinner font 200 nm
-#PATH_1 = "/home/marilin/Downloads/CE_4_PCL_11KV_61.tif" #thinner font for 2
+# PATH_1 = "/home/marilin/Documents/ESP/data/SEM/PEO_EcN_I_181220_MM_2k_02.tif" #10
+# PATH_1 = "/home/marilin/Downloads/1_15_8020_13_3000(2).tif" # thinner font 10 um 
+# PATH_1 = "/home/marilin/Downloads/CE_1_PCL_15KV_121.tif" #thinner font 200 nm
+# PATH_1 = "/home/marilin/Downloads/CE_4_PCL_11KV_61.tif" #thinner font for 2
 #PATH_1 = "/home/marilin/Downloads/PCL_15_11k_ACDCM_5_5_65%_4k_1.tif" # zeiss format not working
 
 #pytesseract.pytesseract.tesseract_cmd =r"C:/Program Files/Tesseract-OCR/tesseract.exe"
@@ -56,36 +56,42 @@ def scale_obtain(file):
 
     cv2.drawContours(result, [big_contour], 0, (255,255,255), 1)
 
-    # cross-section
+    # 1px height cross-section
     #cv2.imshow("res", result)
     cross = img[int( (min(x_coords)+ max(x_coords)) //2 ): int( (min(x_coords)+ max(x_coords)) //2 )+1, min(y_coords):max(y_coords)+5]
-    
+
+    #cv2.imshow("cross", cross)
+    ar_z = np.insert(np.nonzero(cross), 0, 0)
+    # diff between non-zero values - fetching the zero amount of zeros and fetching the 
+    # start idx of the longest sub-arr of consecutive zeros
+    min_val = ar_z[np.argmax(np.ediff1d(ar_z))]
+    # end idx of the zero arr
+    max_val = ar_z[np.argmax(np.ediff1d(ar_z)) +1]
+
+    cutting_idx = int(np.mean((min_val, max_val)))
+    #print(cutting_idx)
+
+
+    #print(cross)
     # thinner vs thicker font in scale 
-    if np.count_nonzero(cross) < 20: 
-        scalar = 20
-    else:
-        scalar = 30
-
-    # extracting unit
-    unit = img[min(x_coords):max(x_coords), max(y_coords)-scalar:max(y_coords)]
-    unit = np.pad(unit, pad_width = [(1, 1),(1, 1)], mode = "constant")
-
-    # if np.count_nonzero(unit) < 100: 
+    # if np.count_nonzero(cross) < 20: 
     #     scalar = 20
-    # else: 
+    # else:
     #     scalar = 30
 
+    # extracting unit
+    unit = img[min(x_coords):max(x_coords), min(y_coords) + cutting_idx:max(y_coords)]
+    unit = np.pad(unit, pad_width = [(1, 1),(1, 1)], mode = "constant")
 
     # extracting number
-    number = img[min(x_coords):max(x_coords), min(y_coords):max(y_coords)-scalar]
+    number = img[min(x_coords):max(x_coords), min(y_coords): min(y_coords) + cutting_idx]
     number = np.pad(number, pad_width = [(1, 1),(1, 1)], mode = "constant")
-    # print(np.count_nonzero(number))
-
-    # cv2.imshow("unit", unit)
+    # print(np.count_nonzero(number)
     # cv2.imshow("number", number)
+    # cv2.imshow("unit", unit) 
 
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
     # segmentation technique - one line with many possible char-s
     # https://github.com/madmaze/pytesseract
@@ -122,6 +128,7 @@ def scale_obtain(file):
     try:
         scale_length = np.max(np.nonzero(th2)[1]) - np.min(np.nonzero(th2)[1])
         value_unit_scale.append(scale_length)
+        print(value_unit_scale)
         return value_unit_scale
     
     except: 
