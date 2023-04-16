@@ -1,9 +1,6 @@
-import os
-import matplotlib.pyplot as plt
 import numpy as np
-import re
-import seaborn as sns
-import pandas as pd
+import os
+from scipy import stats
 
 # fetch values between ***diameter values*** and ***time taken*** from the txt file
 ORIG_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/2_tone_fibers/"
@@ -13,6 +10,9 @@ VIS_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/visu
 FILES = os.listdir(ORIG_PATH)
 RES_FILES = os.listdir(RES_PATH)
 #print(RES_FILES)
+
+gen_p, gen_conf_low, gen_conf_high = [], [], []
+measured_p, measured_conf_low, measured_conf_high = [], [], []
 
 
 for file_path in FILES:
@@ -30,6 +30,11 @@ for file_path in FILES:
 
         lst = sum(lst, [])
         dms_gen = np.array((lst[len(lst)-lst[::-1].index("***diameter values***"):]), dtype=np.uint0)
+
+        #print(f"confidence for {file}", stats.ttest_1samp(dms_gen, popmean=20).confidence_interval(confidence_level=0.99))
+        gen_p.append(stats.ttest_1samp(dms_gen, popmean=20).pvalue)
+        gen_conf_low.append(stats.ttest_1samp(dms_gen, popmean=20).confidence_interval(confidence_level=0.99).low)
+        gen_conf_high.append(stats.ttest_1samp(dms_gen, popmean=20).confidence_interval(confidence_level=0.99).high)
 
         #print(file)
         core = file.split("/")[-1].split(".txt")[0]
@@ -51,33 +56,10 @@ for file_path in FILES:
                 
                 dms_measured = np.array((lst[len(lst)-lst[::-1].index("***diameter values***"): lst.index("***time taken***")]), dtype = np.uint0)
 
-        # Binned hg-s #
+                print(f"confidence for {f_res}",stats.ttest_1samp(dms_measured, popmean=20).confidence_interval(confidence_level=0.99))
 
-        # fig, ax = plt.subplots()
-        # plt.style.use('seaborn-deep')
-        # bins = np.linspace(np.minimum(np.min(dms_gen), np.min(dms_measured)), np.maximum( np.max(dms_gen), np.max(dms_measured)), 10)
+                # The bounds of the 95% confidence interval are the minimum and maximum values of the parameter popmean for which the p-value of the test would be 0.05
+                measured_p.append(stats.ttest_1samp(dms_measured, popmean=20).pvalue)
+                measured_conf_low.append(stats.ttest_1samp(dms_measured, popmean=20).confidence_interval(confidence_level=0.99).low)
+                measured_conf_high.append(stats.ttest_1samp(dms_measured, popmean=20).confidence_interval(confidence_level=0.99).high)
 
-        # plt.hist([dms_gen, dms_measured], bins, label=["Generated dm-s", "Measured dm-s"])
-        # plt.legend(loc='upper right')
-
-        # Density hg-s #
-        # # Create a combined dataframe
-        # df = pd.DataFrame({'Generated dm-s': dms_gen, 'Measured dm-s': dms_measured})
-
-        # # Plot the density plot
-        # sns.histplot(data=df, x='Generated dm-s', y='Measured dm-s', shade=True, shade_lowest=False, legend =True)
-
-        # Kde plots # 
-
-        # sns.kdeplot() for stacked 
-        # Plot the stacked density plot without bins
-        # sns.kdeplot(data=dms_gen, common_norm=False, fill=True, alpha=0.5, label="Generated dm-s")  # plot first data series
-        # sns.kdeplot(data=dms_measured, common_norm=False, fill=True, alpha=0.5, label="Measured dm-s")  # plot second data series
-
-        plt.ylabel("Relative frequency")
-        plt.xlabel("Fiber diameter (pixels)")
-        plt.title('Histogram of generated vs measured dm-s')
-        plt.legend()
-        # plt.show()
-        plt.savefig(f"{VIS_PATH}kde_{core}.png")
-        plt.clf()

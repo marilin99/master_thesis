@@ -30,8 +30,8 @@ def find_nearest_whites(img, origin):
 #####
 
 def dm_finder(thinned:np.ndarray, dist:np.ndarray, PATH_1:np.ndarray, pt_s:list, h:int, w:int, nano_per_px:float):
-     dm_s = []
-     exc_cases = []
+     dm_s,exc_cases,coords = [], [], []
+
 
      for x,y in pt_s: 
 
@@ -550,6 +550,8 @@ def dm_finder(thinned:np.ndarray, dist:np.ndarray, PATH_1:np.ndarray, pt_s:list,
                
                # extra condition in case of marker starting at a pointer
                dm = int(2 * px_dist * nano_per_px)
+               # for visualisation purposes 
+               coords.append((x,y,x_new, y_new))
                if dm != 0:    dm_s.append(dm)               
                
           except: 
@@ -558,4 +560,4 @@ def dm_finder(thinned:np.ndarray, dist:np.ndarray, PATH_1:np.ndarray, pt_s:list,
                exc_cases.append((x,y,winners))
                #exc_cases.append((x,y))
 
-     return (dm_s, exc_cases)
+     return (dm_s, exc_cases, coords)

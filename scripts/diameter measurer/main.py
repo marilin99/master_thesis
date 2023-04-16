@@ -14,50 +14,55 @@ from dm_finder import dm_finder
 from unet_pred import net_prediction
 
 
-
-# this image is segmented using statistical region merging from diameterj imagej - from 650 is the scale box 
-#PATH_1 = cv2.imread("/home/marilin/Documents/ESP/diameterJ_test/sem_test/Segmented Images/EcN_II_PEO_131120_GML_15k_01_S1_reverse.tif",0)[:650, :]
-
-TARGET_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/fiber_test_2/unet_results/"
+TARGET_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/fiber_test_2/classical_results_2/"
 
 ORIG_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/fiber_test_2/original_data_2/"
+#ORIG_PATH = "/run/user/1000/gvfs/smb-share:server=kivi.ut.ee,share=tensonilabor/Georg L/Fibre diameter_Marilin/Co-Axial  SEM PVA-Pleu/"
 
 FILES = os.listdir(ORIG_PATH) 
+
+# testing with no conditions for the pt picker 
+#FILES = ["/home/marilin/Documents/ESP/data/fiber_tests/fiber_test_1/original_img/"]
 
 for f in FILES:
      
     start_time = time.time()
     PATH_1 = ORIG_PATH+f
+    core_name = f.split(".tif")[0]
+
     print("**********************")
     print(PATH_1)
 
     ## CLASSICAL SEGMENTATION ##
     # otsu thresholding for 2k and 5k if specified in path
-    # if re.search("(2k|5k)", PATH_1) != None:
-    #     segmented_im = cv2.threshold(cv2.imread(PATH_1, 0), 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)[1]
-    #     print("time taken for otsu segementation", time.time() - start_time)
+    if re.search("(_2k_|_5k_|2k)", PATH_1) != None:
+        continue
+        # segmented_im = cv2.threshold(cv2.imread(PATH_1, 0), 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)[1]
+        # print("time taken for otsu segementation", time.time() - start_time)
     
-    #     dist, thinned = thinner_2k_5k(segmented_im)
+        # dist, thinned = thinner_2k_5k(segmented_im)
     
-    # else:
-    #     # classical segmentation for other magnifications
-    #     segmented_im = classical_segment(PATH_1)
-    #     print("time taken for segmentation classically", time.time() - start_time)
-    #     dist, thinned = thinner(segmented_im)
+    else:
+        # classical segmentation for other magnifications
+        segmented_im = classical_segment(PATH_1)
+        cv2.imwrite(f"{TARGET_PATH}{core_name}_segmented.png", segmented_im)
+        print("time taken for segmentation classically", time.time() - start_time)
+
+        dist, thinned = thinner(segmented_im)
+        cv2.imwrite(f"{TARGET_PATH}{core_name}_thinned.png", np.uint8(thinned))
+
+    print("time taken for thinning", time.time() - start_time)
     
     ## U-NET segmentation ##
-    if re.search("10k", PATH_1) != None:
-        segmented_im = net_prediction(PATH_1)
-        print("time taken for unet segmentation", time.time() - start_time)
-        dist, thinned = thinner(segmented_im)
-        print("time taken for thinning", time.time() - start_time)
 
-    else:
-        continue
-
-
-    # cumulative time 
-    print("time taken for thinning", time.time() - start_time)
+    # this might skip 15k - needs a better way to assess this
+    # if re.search("(_2k_|_5k_|2k)", PATH_1) != None:
+    #     continue
+    # else:
+    #     segmented_im = net_prediction(PATH_1)
+    #     print("time taken for unet segmentation", time.time() - start_time)
+    #     dist, thinned = thinner(segmented_im)
+    #     print("time taken for thinning", time.time() - start_time)
 
     pt_s = point_picker(segmented_im, 100)
     # cumulative time
@@ -75,7 +80,7 @@ for f in FILES:
         elif scales[1] == "nm": 
             nano_per_px = int(scales[0]) / int(scales[-1])
     except Exception: 
-        core_name = f.split(".tif")[0]
+ 
         with open(f"{TARGET_PATH}{core_name}.txt", "w+") as file_ex:
             file_ex.write("Scaling off, check the image")
         continue
@@ -84,13 +89,13 @@ for f in FILES:
     # leaving the lower part (scale included) in for now
     h,w = segmented_im.shape[:2]
 
-    first_dm_s, first_excs = dm_finder(thinned, dist, segmented_im, pt_s, h,w,nano_per_px)[:2]
+    first_dm_s, first_excs, coords  = dm_finder(thinned, dist, segmented_im, pt_s, h,w,nano_per_px) #[:3]
     print("time taken for dm finding", time.time()-start_time)
 
     ## saving values + time to a txt file ##
     # splitting from tif assuming that tif is still in the file name
 
-    core_name = f.split(".tif")[0]
+   
     with open(f"{TARGET_PATH}{core_name}.txt", "w+") as file:
 
         file.write("***diameter values***")
@@ -106,6 +111,12 @@ for f in FILES:
         for val in first_excs:
             file.write(f"{val}")
             file.write("\n")
+        file.write("***coordinates***")
+        file.write("\n")
+        for val in coords:
+            file.write(f"{val}")
+            file.write("\n")
+        
 
     print("time taken", (time.time() - start_time))
     start_time = time.time()

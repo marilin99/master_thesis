@@ -32,11 +32,15 @@ def point_picker(PATH_1, amount_of_points):
                continue
 
           # safe check - exclusive or to avoid obscure situations or stick to or?
+          # commenting out for now 
           if (U == 0 and L == 0) ^ (U == 0 and R == 0) ^ (B == 0 and L == 0) ^ (B == 0 and R == 0):
           #if (U == 0 and L == 0) or (U == 0 and R == 0) or (B == 0 and L == 0) or (B == 0 and R == 0):
           # uniqueness (was one pair at 1000 points)
-               #if (x,y) not in coords:
-               coords.append((x,y))
+               if amount_of_points < 1000:
+                    coords.append((x,y))
+               else:
+                    if (x,y) not in coords:
+                         coords.append((x,y))
 
           # amount of points chosen
           if len(coords) == amount_of_points:
