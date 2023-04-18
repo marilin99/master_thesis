@@ -18,6 +18,7 @@ import re
 #PATH_1 = "/home/marilin/Downloads/PCL_15_11k_ACDCM_5_5_65%_4k_1.tif" # zeiss format not working
 #pytesseract.pytesseract.tesseract_cmd =r"C:/Program Files/Tesseract-OCR/tesseract.exe"
 
+PATH_1 = "/home/marilin/Documents/ESP/data/fiber_tests/fiber_test_2/original_data_2/PCL_MSN_PEI_CAM_10k_12031906.tif"
 # pot_val, pot_unit, scale length in px
 value_unit_scale = []
 # list of units
@@ -130,4 +131,4 @@ def scale_obtain(file):
 
 
 # if __name__ == "__main__":
-#     #scale_obtain(PATH_1)
+#     print(scale_obtain(PATH_1))
