@@ -8,7 +8,7 @@ import re
 
 # PATH_1 = "/home/marilin/Documents/ESP/data/SEM/EcN_II_PEO_131120_GML_15k_01.tif" # 400
 # PATH_1 = "/home/marilin/Documents/ESP/data/SEM/Lactis_PEO_111220_20k04.tif" # 1
-# PATH_1 =  "/home/marilin/Documents/ESP/data/SEM/Lactis_PEO_111220_20k03.tif" # 2
+PATH_1 =  "/home/marilin/Documents/ESP/data/SEM/Lactis_PEO_111220_20k03.tif" # 2
 # PATH_1 =  "/home/marilin/Documents/ESP/data/SEM/EcN_II_PEO_131120_GML_5k_02.tif" # small scale
 
 # PATH_1 = "/home/marilin/Documents/ESP/data/SEM/PEO_EcN_I_181220_MM_2k_02.tif" #10
@@ -18,7 +18,6 @@ import re
 #PATH_1 = "/home/marilin/Downloads/PCL_15_11k_ACDCM_5_5_65%_4k_1.tif" # zeiss format not working
 #pytesseract.pytesseract.tesseract_cmd =r"C:/Program Files/Tesseract-OCR/tesseract.exe"
 
-PATH_1 = "/home/marilin/Documents/ESP/data/fiber_tests/fiber_test_2/original_data_2/PCL_MSN_PEI_CAM_10k_12031906.tif"
 # pot_val, pot_unit, scale length in px
 value_unit_scale = []
 # list of units
@@ -37,7 +36,7 @@ def scale_obtain(file):
     ###########################################################################
     # number and unit obtaining
 
-    thresh = cv2.bitwise_not(cv2.threshold(img, 0, 255, cv2.THRESH_BINARY)[1])
+    thresh = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY_INV)[1]
 
 
     result = img.copy()
@@ -93,13 +92,13 @@ def scale_obtain(file):
 
     try:
         for val in range(10,30, 1):
-            detected_nr = str(pytesseract.image_to_string(cv2.resize(cv2.threshold(number, 250, 255, cv2.THRESH_BINARY)[1], (val, val)), config =custom_config, timeout = 2)).split("y\n\x0c")[0].strip() # Timeout after 2 seconds
+            detected_nr = str(pytesseract.image_to_string(cv2.resize(number, (val, val)), config =custom_config, timeout = 2)).split("y\n\x0c")[0].strip() # Timeout after 2 seconds
             # give nr options
             if detected_nr in pot_values:
                 value_unit_scale.append(int(detected_nr))
                 counter.append(1)
 
-            detected_unit = str(pytesseract.image_to_string(cv2.resize(cv2.threshold(unit, 250, 255, cv2.THRESH_BINARY)[1], (val, val)), config =custom_config, timeout = 2)).split("y\n\x0c")[0].strip() # Timeout after 2 seconds
+            detected_unit = str(pytesseract.image_to_string(cv2.resize(unit, (val, val)), config =custom_config, timeout = 2)).split("y\n\x0c")[0].strip() # Timeout after 2 seconds
             if detected_unit in pot_units:
                 value_unit_scale.append(detected_unit)
                 counter.append(2)
@@ -130,5 +129,5 @@ def scale_obtain(file):
 
 
 
-# if __name__ == "__main__":
-#     print(scale_obtain(PATH_1))
+if __name__ == "__main__":
+    print(scale_obtain(PATH_1))
