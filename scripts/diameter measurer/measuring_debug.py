@@ -14,9 +14,9 @@ from dm_finder import dm_finder
 from unet_pred import net_prediction
 
 
-TARGET_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/2_tone_fibers_autom_results/" 
+TARGET_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/three_dm_fibers_autom_results_500/" 
 
-ORIG_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/2_tone_fibers/"
+ORIG_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/three_dm_fibers_sub/"
 
 #ORIG_PATH = "/run/user/1000/gvfs/smb-share:server=kivi.ut.ee,share=tensonilabor/Georg L/Fibre diameter_Marilin/Co-Axial  SEM PVA-Pleu/"
 
@@ -26,7 +26,7 @@ FILES = os.listdir(ORIG_PATH)
 #FILES = ["/home/marilin/Documents/ESP/data/fiber_tests/fiber_test_1/original_img/"]
 
 for f in FILES:
-     if f.endswith(".png"):
+     if f.endswith(".png") and "unordered" in f:
           start_time = time.time()
           PATH_1 = ORIG_PATH+f
           core_name = f.split(".png")[0]
@@ -66,7 +66,7 @@ for f in FILES:
               dist, thinned = thinner(segmented_im)
               print("time taken for thinning", time.time() - start_time)
 
-          pt_s = point_picker(segmented_im, 30)
+          pt_s = point_picker(segmented_im, 750)
           # cumulative time
           print("time taken for point picking", time.time() - start_time)
 
@@ -98,7 +98,7 @@ for f in FILES:
           # splitting from tif assuming that tif is still in the file name
 
           
-          with open(f"{TARGET_PATH}{core_name}_30.txt", "w+") as file:
+          with open(f"{TARGET_PATH}{core_name}.txt", "w+") as file:
 
                file.write("***diameter values***")
                file.write("\n")
@@ -131,10 +131,10 @@ for f in FILES:
                
           ## saving 5 bin histogram ##
           plt.hist(first_dm_s, bins = 5)
-          plt.title("Fiber diameter measurements (n=30)")
+          plt.title("Fiber diameter measurements (n=750)")
           plt.ylabel("Frequency")
           plt.xlabel("Fiber diameter (pixels)")
-          plt.savefig(f"{TARGET_PATH}{core_name}_30.png")
+          plt.savefig(f"{TARGET_PATH}{core_name}.png")
           plt.clf()
 
           #########

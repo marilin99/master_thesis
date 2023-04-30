@@ -20,6 +20,7 @@ import webcolors
 
 PATH = "/home/marilin/Documents/ESP/data/FM_SYTO/" #, "/home/marilin/Documents/ESP/data/FM_SYTO/"]  # change this once files in the network server
 TARGET_PATH = "/home/marilin/Documents/ESP/data/FM_SYTO_conversion/"
+
 #TARGET_PATH = "/home/marilin/Documents/ESP/data/FM_SYTO_conversion_test/"
 FILES = os.listdir(PATH) 
 #FILES = ["PCL_PEO_fibers_FM_syto_4.czi"]

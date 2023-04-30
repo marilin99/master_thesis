@@ -1,24 +1,22 @@
 #######################################################################
 ####      suggested method to count the green + red bacteria       ####
 #### if file has the word "control" in it, best for 1-stack images ####
+#### this mostly works for controls where the bac. size is ~20px   ####
 #######################################################################
 
-import os.path
+
+import os
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 from scipy import ndimage
 from scipy.ndimage import *
-import skimage
 from skimage.morphology import skeletonize, medial_axis, disk
-from scipy.ndimage.filters import maximum_filter
-from scipy.ndimage.morphology import generate_binary_structure, binary_erosion
 from skimage.feature import peak_local_max
-import scipy.ndimage.filters as filters 
-import time 
+import time
 from varname import argname
 
-# uncomment this if showing image using other src than opencv 
+# uncomment this if showing image using other src than opencv
 # for k, v in os.environ.items():
 # 	if k.startswith("QT_") and "cv2" in v:
 # 	    del os.environ[k]
@@ -27,16 +25,8 @@ from varname import argname
 
 start_time = time.time()
 
-orig_red = cv2.imread("/home/marilin/Documents/ESP/data/SYTO_PI_conversion/stack_fibers_24h_growth_syto_PI_1_red_3.png",0)
-orig_green = cv2.imread("/home/marilin/Documents/ESP/data/SYTO_PI_conversion/stack_fibers_24h_growth_syto_PI_1_green_3.png",0)
-shape_red = orig_red.shape
-shape_green = orig_green.shape
 
-# works_for_both() func dependency 
-red_chan = cv2.resize(orig_red, (512,512))
-green_chan = cv2.resize(orig_green, (512,512))
-
-## red chan 
+## red chan
 #kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2,2))
 #red_chan_mean = cv2.blur(red_chan, kernel)
 
@@ -45,7 +35,7 @@ def works_for_red(data):
     # mean filter
     red_chan_mean = cv2.blur(data, (3,3))
 
-    ## dilate 
+    ## dilate
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4,4))
     red_dilated = cv2.dilate(red_chan_mean, kernel)
     _, thresh_r = cv2.threshold(red_dilated, 25, 255,cv2.THRESH_TOZERO)
@@ -79,7 +69,7 @@ def works_for_green(data):
 
     return thresh_g
 
-### control bac counter 
+### control bac counter
 def works_for_both(data):
 
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4,4))
@@ -91,13 +81,13 @@ def works_for_both(data):
 
     #green_chan_mean = cv2.blur(cl2, (3,3))
     dilated = cv2.dilate(cl2, kernel)
-   
+
     #_, thresh_g = cv2.threshold(green_dilated, 40, 255,cv2.THRESH_TOZERO)
     _, thresh = cv2.threshold(dilated, 0, 255, cv2.THRESH_TOZERO+cv2.THRESH_OTSU)
-    
+
     # https://github.com/pwwang/python-varname
-    
-    # change condition if needed - type based on variable name 
+
+    # change condition if needed - type based on variable name
     if 'green' in argname("data"):
         ty = "green"
 
@@ -112,40 +102,40 @@ def works_for_both(data):
     return thresh, ty
 
 ## scipy.ndimage
-## control bac counter 
+## control bac counter
 # https://stackoverflow.com/questions/3684484/peak-detection-in-a-2d-array/3689710#3689710
 def peaker(data,ty):
     # define a disk shape - 4 for red channel, 3 for green channel
     # possibly needs some scaling, depending on resolution? - the bigger the initial reso, the more the disk size
     if ty == "green":
-        if 512 in shape_green: # abnormality to these images 
+        if 512 in shape_green: # abnormality to these images
             neighborhood = disk(3) # 3 w 512x512 - w 1024 needs +4 size disk?
         elif 1024 in shape_green:
             neighborhood = disk(7) # 3 w 512x512 - w 1024 needs +4 size disk?
     elif ty == "red":
         if 512 in shape_red:
-            neighborhood = disk(4) # 4 w 512x512 - w 1024 would need +4 size disk 
+            neighborhood = disk(4) # 4 w 512x512 - w 1024 would need +4 size disk
         elif 1024 in shape_red:
             neighborhood = disk(8)
 
-    #apply the local maximum filter; all pixel of maximal value 
+    #apply the local maximum filter; all pixel of maximal value
     #in their neighborhood are set to 1
 
     local_max = maximum_filter(data, footprint=neighborhood) == data
 
-    #local_max is a mask that contains the peaks we are 
+    #local_max is a mask that contains the peaks we are
     #looking for, but also the background.
     #In order to isolate the peaks we must remove the background from the mask.
 
     #we create the mask of the background
     background = (data==0)
 
-    #a little technicality: we must erode the background in order to 
-    #successfully subtract it form local_max, otherwise a line will 
+    #a little technicality: we must erode the background in order to
+    #successfully subtract it form local_max, otherwise a line will q
     #appear along the background border (artifact of the local maximum filter)
     eroded_background = binary_erosion(background, structure=neighborhood, border_value=1)
 
-    #we obtain the final mask, containing only peaks, 
+    #we obtain the final mask, containing only peaks,
     #by removing the background from the local_max mask (xor operation)
     detected_peaks = local_max ^ eroded_background
 
@@ -155,16 +145,38 @@ def peaker(data,ty):
 
 # output 859 for red ("real" - 849) w disk r 4 (w works_for_red)
 # w both - 892
-labeled_array, num_features_r = label(peaker(*works_for_both(red_chan)))
+
+## synthesised image check ##
+
+PATH = "/home/marilin/Documents/ESP/data/bacteria_tests/synthesised_images/"
+FILES = os.listdir(PATH)
+
+for f in FILES:
+    file = PATH+f
+    #print(file)
+
+    if file.endswith(".png") and "red" in file:
+        orig_red = cv2.imread(file,0)
+        shape_red = orig_red.shape
+        red_chan = cv2.resize(orig_red, (512,512))
+        labeled_array, num_features_r = label(peaker(*works_for_both(red_chan)))
+        print(file, num_features_r)
+
+    elif file.endswith(".png") and "green" in file:
+        orig_green = cv2.imread(file,0)
+        shape_green = orig_green.shape
+        green_chan = cv2.resize(orig_green, (512,512))
+        labeled_array, num_features_g = label(peaker(*works_for_both(green_chan)))
+        print(file, num_features_g)
 
 
 # # output 796 for green ("real" - 795) w disk r 3 (green_intensities.png)
 # w both - 752
-labeled_array, num_features_g = label(peaker(*works_for_both(green_chan)))
+#labeled_array, num_features_g = label(peaker(*works_for_both(green_chan)))
 
-# "greens: ", num_features_g, 
-print("greens: ", num_features_g, "reds: ", num_features_r)
-print("time it took: ", time.time()-start_time)
+# "greens: ", num_features_g,
+# print("greens: ", num_features_g, "reds: ", num_features_r)
+# print("time it took: ", time.time()-start_time)
 ##
 
 ## mahotas testing - regional max functionality
@@ -182,7 +194,7 @@ print("time it took: ", time.time()-start_time)
 # seeds,nr_nuclei = mh.label(rmax)
 # #print(nr_nuclei)
 
-# # needs some watershedding 
+# # needs some watershedding
 # #_, thresh_red = cv2.threshold(thresh_r, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 # T = mh.thresholding.otsu(thresh_r)
 # dist = mh.distance(thresh_r > T)
@@ -202,10 +214,10 @@ print("time it took: ", time.time()-start_time)
 ##
 
 
-## local intensity maxima 
+## local intensity maxima
 # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,3))
-# neighborhood_size = 3 
-# threshold = 30 
+# neighborhood_size = 3
+# threshold = 30
 
 
 # data_max = filters.maximum_filter(red_chan_mean, neighborhood_size)
@@ -219,10 +231,10 @@ print("time it took: ", time.time()-start_time)
 
 ### visualisation ###
 #cv2.imshow("orig", img)
-cv2.imshow("red_chan", red_chan)
-cv2.imshow("green_chan", green_chan)
-# # cv2.imshow("red_chan_mean", cl2)
-# # cv2.imshow("red_dilated", green_dilated)
-# # cv2.imshow("red_thresh", thresh_g)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# cv2.imshow("red_chan", red_chan)
+# cv2.imshow("green_chan", green_chan)
+# # # cv2.imshow("red_chan_mean", cl2)
+# # # cv2.imshow("red_dilated", green_dilated)
+# # # cv2.imshow("red_thresh", thresh_g)
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()

@@ -4,12 +4,7 @@ import cv2
 import matplotlib.pyplot as plt
 from scipy import ndimage
 from scipy.ndimage import *
-import skimage
 from skimage.morphology import skeletonize, medial_axis, disk
-from scipy.ndimage.filters import maximum_filter
-from scipy.ndimage.morphology import generate_binary_structure, binary_erosion
-from skimage.feature import peak_local_max
-import scipy.ndimage.filters as filters 
 import time 
 from varname import argname
 from natsort import natsorted
@@ -37,8 +32,10 @@ def works_for_both(data):
     #dilated = cv2.dilate(eroded, kernel)
     #print(np.unique(dilated))
     #thresh = cv2.adaptiveThreshold(dilated, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 9, 30)
+
+    
     _, thresh = cv2.threshold(data, 200, 255,cv2.THRESH_TOZERO)
-    #_, thresh = cv2.threshold(dilated, 0, 255, cv2.THRESH_TOZERO+cv2.THRESH_OTSU)
+    #_, thresh = cv2.threshold(data, 0, 255, cv2.THRESH_TOZERO+cv2.THRESH_OTSU)
 
     # works for 1024x1024
     # PI_1 - 200, PI_2 - 100, PI_3 - 140, PI_4 - 200, PI_5 - 220, PI_6 - 110, PI_7 - 200
@@ -218,6 +215,7 @@ for f in natsorted(list(set(FIL_FILES))):
         uniq_vals = np.unique(labeled_array.flatten())
 
         #print(np.unique(labeled_array.flatten())!=0)
+
         ## for the cases where the bacteria is layered on top of each other 
         for val in uniq_vals[uniq_vals!=0]:
             idxs = np.argwhere(labeled_array==val)

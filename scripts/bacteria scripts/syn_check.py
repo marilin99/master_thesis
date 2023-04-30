@@ -19,12 +19,12 @@ from natsort import natsorted
 counter_2 = 0
 def works_for_both(data):
     global counter_2
-    #kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4,4))
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4,4))
     ## green chan
 
     # clahe req grayscale img
-    # clahe2 = cv2.createCLAHE(clipLimit=1, tileGridSize=(20,20))
-    # cl2 = clahe2.apply(data)
+    clahe2 = cv2.createCLAHE(clipLimit=1, tileGridSize=(20,20))
+    cl2 = clahe2.apply(data)
 
     #green_chan_mean = cv2.blur(cl2, (3,3))
     # over 200 for level 
@@ -33,8 +33,15 @@ def works_for_both(data):
     #dilated = cv2.dilate(eroded, kernel)
     #print(np.unique(dilated))
     #thresh = cv2.adaptiveThreshold(dilated, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 9, 30)
-    _, thresh = cv2.threshold(data, 200, 255,cv2.THRESH_TOZERO)
-    #_, thresh = cv2.threshold(dilated, 0, 255, cv2.THRESH_TOZERO+cv2.THRESH_OTSU)
+
+    #_, thresh = cv2.threshold(cl2, 200, 255,cv2.THRESH_TOZERO)
+
+    # for one stack 
+    _, thresh = cv2.threshold(data, 0, 255, cv2.THRESH_TOZERO+cv2.THRESH_OTSU)
+
+    #_, thresh = cv2.threshold(data, 200, 255,cv2.THRESH_TOZERO)
+
+    
 
     # works for 1024x1024
     # PI_1 - 200, PI_2 - 100, PI_3 - 140, PI_4 - 200, PI_5 - 220, PI_6 - 110, PI_7 - 200
@@ -59,6 +66,7 @@ def works_for_both(data):
 counter = 0
 base_im_r, base_im_g = np.zeros((512,512), dtype=np.uint8), np.zeros((512,512), dtype=np.uint8)
 # https://stackoverflow.com/questions/3684484/peak-detection-in-a-2d-array/3689710#3689710
+
 def peaker(data,ty):
     global counter, base_im_r, base_im_g
     # define a disk shape - 4 for red channel, 3 for green channel
@@ -112,7 +120,6 @@ def peaker(data,ty):
     #############
 
     new_im[new_im>0] = 255
-    
     # contours, hierarchy = cv2.findContours(new_im, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
     # print(contours)
     if ty == "red":
@@ -133,9 +140,9 @@ def peaker(data,ty):
 start_time = time.time()
 
 # one stack of 24h growth 
-#PATH = "/home/marilin/Documents/ESP/data/SYTO_PI_conversion/"
-PATH = "/home/marilin/Documents/ESP/data/bacteria_tests/test_pipeline_2/"
+PATH = "/home/marilin/Documents/ESP/data/SYTO_PI_conversion/"
 FILES = os.listdir(PATH) 
+
 region_red = {}
 region_green = {}
 unique_files = []
@@ -146,64 +153,71 @@ bac_counting = {}
 
 #print(natsorted(FILES))
 
-# filtering out png and not control values 
-for f in natsorted(FILES):
-    # created xml from core files, can fetch the unique files from there 
-    if f.endswith(".xml"):
-        unique_file = f.split(".xml")[0]
-        unique_files.append(unique_file)
+# # filtering out png and not control values 
+# for f in natsorted(FILES):
+#     # # created xml from core files, can fetch the unique files from there 
+#     # if f.endswith(".xml"):
+#     #     unique_file = f.split(".xml")[0]
+#     #     unique_files.append(unique_file)
     
-    for val in unique_files:
-        # control filtered out for now 
-        if "control" not in unique_file and f.startswith(val) and f.endswith("png"):
-            FIL_FILES.append(f)
+#     #for val in unique_files:
+#         # control filtered out for now 
+#     if f.endswith("png"):
+#         FIL_FILES.append(f)
 
-global_core_name = None
+# global_core_name = None
 
-# tmp sol - ideally should have a mark that ends the iteration or use the piece of code
-# adding a pseudo file to mark the end of the list 
-FIL_FILES.append("_".join((natsorted(list(set(FIL_FILES)))[-1]).split("_")[:-3])+"_zzz.png")
+# # tmp sol - ideally should have a mark that ends the iteration or use the piece of code
+# # adding a pseudo file to mark the end of the list 
+# FIL_FILES.append("_".join((natsorted(list(set(FIL_FILES)))[-1]).split("_")[:-3])+"_zzz.png")
 
-# using set to remove duplicates 
-for f in natsorted(list(set(FIL_FILES))):
+# # using set to remove duplicates 
+# for f in natsorted(list(set(FIL_FILES))):
 
-    #if f.startswith("stack_fibers_24h_growth_syto_PI"):
+#     #if f.startswith("stack_fibers_24h_growth_syto_PI"):
        
-    file = PATH+f
-    core_name = "_".join(f.split("_")[:-2])
+#     file = PATH+f
+#     core_name = "_".join(f.split("_")[:-2])
 
-        # gathering data and resetting after every new set of stacks, considering first round
+
+#         # gathering data and resetting after every new set of stacks, considering first round
  
-    if core_name != global_core_name:
-        if global_core_name != None:
-            print(core_name)
-            bac_counting[f"{global_core_name}_red"] = label(base_im_r)[1]
-            bac_counting[f"{global_core_name}_green"] = label(base_im_g)[1]
+#     if core_name != global_core_name:
+#         if global_core_name != None:
+      
+#             bac_counting[f"{global_core_name}_red"] = label(base_im_r)[1]
+#             bac_counting[f"{global_core_name}_green"] = label(base_im_g)[1]
 
-            base_im_r, base_im_g = np.zeros((512,512), dtype=np.uint8), np.zeros((512,512), dtype=np.uint8)
+#             base_im_r, base_im_g = np.zeros((512,512), dtype=np.uint8), np.zeros((512,512), dtype=np.uint8)
 
-            #### saving detected peaks data to text file #####
-            # with open(f"{PATH}{global_core_name}_regions_r.txt", "w+") as file_m:
-            #     for key, val in region_red.items():
-            #         file_m.write(f"{key}: {val}")
-            #         file_m.write("\n")
+#             #### saving detected peaks data to text file #####
+#             # with open(f"{PATH}{global_core_name}_regions_r.txt", "w+") as file_m:
+#             #     for key, val in region_red.items():
+#             #         file_m.write(f"{key}: {val}")
+#             #         file_m.write("\n")
             
-            # with open(f"{PATH}{global_core_name}_regions_g.txt", "w+") as file_l:
-            #     for key, val in region_green.items():
-            #         file_l.write(f"{key}: {val}")
-            #         file_l.write("\n")
+#             # with open(f"{PATH}{global_core_name}_regions_g.txt", "w+") as file_l:
+#             #     for key, val in region_green.items():
+#             #         file_l.write(f"{key}: {val}")
+#             #         file_l.write("\n")
 
-        # resetting var name
-        global_core_name = core_name
+#         # resetting var name
+#         global_core_name = core_name
 
   
-        # final case
+#         # final case
   
-        # global_core_name!= None and ("_".join(global_core_name.split("_")[:-1])+"_"+str(int(global_core_name.split("_")[-1])+1)) not in unique_files:
+#         # global_core_name!= None and ("_".join(global_core_name.split("_")[:-1])+"_"+str(int(global_core_name.split("_")[-1])+1)) not in unique_files:
  
+PATH = "/home/marilin/Documents/ESP/data/bacteria_tests/synthesised_images/"
+#PATH = "/home/marilin/Documents/ESP/data/SYTO_PI_conversion/"
+FILES = os.listdir(PATH)
+
+for f in FILES:
+    file = PATH+f
     #print(file)
-    if "red" in file: 
-        #params = []
+
+    if file.endswith(".png") and "red" in file:
         orig_red = cv2.imread(file,0)
         shape_red = orig_red.shape
         red_chan = cv2.resize(orig_red, (512,512))
@@ -226,14 +240,16 @@ for f in natsorted(list(set(FIL_FILES))):
         #     counter_red+=1
 
         #print(np.nonzero(labeled_array))
-        print("red", num_features_r)
+        print(file, num_features_r)
 
-    elif "green" in file: 
+    elif file.endswith(".png") and "green" in file: 
+
         orig_green = cv2.imread(file,0)
         shape_green = orig_green.shape
         green_chan = cv2.resize(orig_green, (512,512))
         labeled_array, num_features_g = label(peaker(*works_for_both(green_chan)))
-        print("green", num_features_g)
+        print(file, num_features_g)
+
         uniq_vals = np.unique(labeled_array.flatten())
 
         #print(np.unique(labeled_array.flatten())!=0)

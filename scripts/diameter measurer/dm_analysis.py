@@ -8,7 +8,10 @@ import re
 import matplotlib.pyplot as plt 
 
 # fetch values between ***diameter values*** and ***time taken*** from the txt file 
-ORIG_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/fiber_test_3/unet_results/"
+#ORIG_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/fiber_test_3/unet_results/"
+ORIG_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/fiber_test_1/unet_results/compound_results/"
+#ORIG_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/fiber_test_1/unet_results/compound_results/"
+
 
 FILES = os.listdir(ORIG_PATH) 
 d = {}
@@ -30,7 +33,10 @@ for file_path in FILES:
 
         lst = sum(lst, [])
         try:
-            dm_values = np.array((lst[len(lst)-lst[::-1].index("***diameter values***"): lst.index("***time taken***")]), dtype = np.uint0)
+            lst = [float(val) if len(val.split(".")[0])>1 else float(val) * 1000 for val in lst[1:]]
+            lst.insert(0,"***diameter values***")
+            dm_values = np.array((lst[len(lst)-lst[::-1].index("***diameter values***"): ]), dtype = np.uint0) #lst.index("***time taken***")
+            #lst = [float(val) if len(val.split(".")[0])>1 else float(val) * 1000 for val in lst[1:]]
         except:
             continue
 
@@ -45,7 +51,7 @@ for file_path in FILES:
         d["Coefficient of variation"].append(round(np.std(dm_values) / np.mean(dm_values), 3))
 
 dataframe = pd.DataFrame(data = d)
-dataframe.to_csv(f"{ORIG_PATH}classical_analysis.csv", index=False, sep=",")
+#dataframe.to_csv(f"{ORIG_PATH}classical_analysis.csv", index=False, sep=",")
 print(dataframe)
 
 # # visualizing the df

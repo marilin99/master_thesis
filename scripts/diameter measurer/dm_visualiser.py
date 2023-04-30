@@ -9,9 +9,13 @@ import matplotlib.pyplot as plt
 import cv2
 
 # fetch values between ***diameter values*** and ***time taken*** from the txt file 
-ORIG_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/2_tone_fibers_autom_results/"
+#ORIG_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/2_tone_fibers_autom_results/"
+ORIG_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/one_dm_fibers_autom_results/"
 
-IMG_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/2_tone_fibers/"
+ORIG_PATH = IMG_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/fiber_test_3/ex_img/"
+#IMG_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/2_tone_fibers/"
+#IMG_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/one_dm_fibers/"
+
 VIS_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/visuals/"
 FILES = os.listdir(ORIG_PATH) 
 
@@ -22,7 +26,7 @@ for file_path in FILES:
     file = ORIG_PATH+file_path
     #print(file_path)
 
-    if file.endswith(".txt") and re.search("(_2k_|_5k_|2k)", file) == None:
+    if file.endswith(".txt"): # and re.search("(_2k_|_5k_|2k)", file) == None:
 
         lst = []
         with open(file) as f:
@@ -32,17 +36,15 @@ for file_path in FILES:
         lst = sum(lst, [])
         
         coords = np.array((lst[len(lst)-lst[::-1].index("***coordinates***"):]))
-      
-
 
  
-        core_f  = file_path.split(".txt")[0][:-3] #-3 syn fib specific
+        core_f  = file_path.split(".txt")[0] #[:-3] #-3 syn fib specific
 
-        #print(core_f)
+
         #print(f"{IMG_PATH+core_f}.png")
         # original images in .tif
 
-        rgb_im = cv2.imread(f"{IMG_PATH+core_f}.png")
+        rgb_im = cv2.imread(f"{IMG_PATH+core_f}.tif")
 
         start_color = (0, 0, 0)
         #start_color = (255, 255, 255)  # white
@@ -73,8 +75,8 @@ for file_path in FILES:
     
         image = cv2.cvtColor(rgb_im, cv2.COLOR_RGB2BGR)
 
-        #cv2.imshow('Image with Gradient Lines', image)
-        # cv2.imwrite(f"{VIS_PATH+core_f}_start_end.png", image)
-        #cv2.waitKey(0)
-        #cv2.destroyAllWindows()
+        #cv2.imshow(f'Image with Gradient Lines_{core_f}', image)
+        cv2.imwrite(f"{VIS_PATH+core_f}_start_end.png", image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
                 
