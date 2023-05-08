@@ -8,7 +8,7 @@ The goal of this project is to provide an automated microscopy image analysis to
 ## The repo structure 
 The `main` branch of the repo includes 3 main folders: `Tool setup`, `Example data` and `Quick runs`. 
 
-The `Tool setup` folder can be used when the user wants to setup the whole system. This system is being triggered by the Task Scheduler in Windows OS - a .xml is provided so the user can setup the task themselves. Additionally, some folder paths ought to be changed in the <code>runner.py</code> and the <code>main.py</code> in the respective pipelines. 
+The `Tool setup` folder can be used when the user wants to setup the whole system. This system is being triggered by the Task Scheduler in Windows OS - a .xml is provided so the user can setup the task themselves. Additionally, some folder paths ought to be changed in the <code>runner.py</code> and the <code>main.py</code> files in the respective pipelines. The specific lines are marked with comments.
 
 The `Example data` folder includes both simulated and real microscopy data for testing out both pipelines.
 
