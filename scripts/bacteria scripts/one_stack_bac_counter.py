@@ -83,7 +83,10 @@ def works_for_both(data):
     dilated = cv2.dilate(cl2, kernel)
 
     #_, thresh_g = cv2.threshold(green_dilated, 40, 255,cv2.THRESH_TOZERO)
-    _, thresh = cv2.threshold(dilated, 0, 255, cv2.THRESH_TOZERO+cv2.THRESH_OTSU)
+    #_, thresh = cv2.threshold(dilated, 0, 255, cv2.THRESH_TOZERO+cv2.THRESH_OTSU)
+    _, thresh = cv2.threshold(data, 0, 255, cv2.THRESH_TOZERO+cv2.THRESH_OTSU)
+    # _, thresh = cv2.threshold(data, 200, 255, cv2.THRESH_TOZERO)
+ 
 
     # https://github.com/pwwang/python-varname
 
@@ -139,9 +142,13 @@ def peaker(data,ty):
     #by removing the background from the local_max mask (xor operation)
     detected_peaks = local_max ^ eroded_background
 
-    cv2.imshow("detected_peaks", np.multiply(data, detected_peaks))
+    #cv2.imshow("detected_peaks", np.multiply(data, detected_peaks))
 
-    return detected_peaks
+    return detected_peaks #, new_im
+
+    ######
+
+    #return detected_peaks
 
 # output 859 for red ("real" - 849) w disk r 4 (w works_for_red)
 # w both - 892

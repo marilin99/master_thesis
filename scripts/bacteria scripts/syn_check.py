@@ -139,9 +139,7 @@ def peaker(data,ty):
 ## check what is in the folder - unique names - no growth fibers, 24h fibers, control 
 start_time = time.time()
 
-# one stack of 24h growth 
-PATH = "/home/marilin/Documents/ESP/data/SYTO_PI_conversion/"
-FILES = os.listdir(PATH) 
+
 
 region_red = {}
 region_green = {}

@@ -14,3 +14,4 @@ plantcv==3.14.2
 pykuwahara==0.3.2
 pytesseract==0.3.10
 tensorflow==2.12.0
+subprocess.run==0.0.8

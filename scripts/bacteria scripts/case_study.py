@@ -133,8 +133,8 @@ def peaker(data,ty):
 start_time = time.time()
 
 # one stack of 24h growth 
-#PATH = "/home/marilin/Documents/ESP/data/SYTO_PI_conversion/"
-PATH = "/home/marilin/Documents/ESP/data/bacteria_tests/test_pipeline_2/"
+PATH = "/home/marilin/Documents/ESP/data/FM_SYTO_conversion/"
+#PATH = "/home/marilin/Documents/ESP/data/bacteria_tests/test_pipeline/"
 FILES = os.listdir(PATH) 
 region_red = {}
 region_green = {}

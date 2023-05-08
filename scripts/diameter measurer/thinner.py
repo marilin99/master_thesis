@@ -12,8 +12,7 @@ def thinner(PATH_1):
      ## visuals for testing ##
      # cv2.imshow("thi", thinned)
      # # dist visual
-     # cv2.normalize(dist, dist, 0, 1.0, cv2.NORM_MINMAX)
-     # cv2.imshow("dist", dist)
+
 
 
      #### pre-processing of the thinned image ####
@@ -51,10 +50,11 @@ def thinner_2k_5k(PATH_1):
 
      return dist, thinned
 
-#if __name__ == "__main__":
-#     im = cv2.imread("/home/marilin/Documents/ESP/data/fiber_tests/fiber_test_1/2k_5k_orig_images/EcN_PEO_111220_2k06.tif",0)
+# if __name__ == "__main__":
+#      im = cv2.imread("/home/marilin/Documents/ESP/data/fiber_tests/fiber_test_1/classical_results_2/EcN_II_PEO_131120_GML_15k_01_segmented.png",0)
+#      thinner(im)
 #     _, thresh1 = cv2.threshold(im, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-#     dist, thinned = thinner(im)
+#    dist, thinned = thinner(im)
 #     cv2.imwrite("/home/marilin/Documents/ESP/data/fiber_tests/fiber_test_1/segmented_img_class_tmp/EcN_PEO_111220_2k06_thresh.png", thresh1)
     #cv2.imwrite("/home/marilin/Documents/ESP/data/fiber_tests/fiber_test_1/segmented_img_class_tmp/EcN_PEO_111220_2k06_thinned.png", thinned)
 #     cv2.waitKey(0)

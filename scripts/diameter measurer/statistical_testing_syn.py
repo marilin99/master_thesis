@@ -5,7 +5,7 @@ import numpy as np
 import os
 from scipy import stats
 import pandas as pd
-
+from natsort import natsorted
 
 # fetch values between ***diameter values*** and ***time taken*** from the txt file
 ORIG_PATH = "/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/one_dm_fibers/"
@@ -22,8 +22,9 @@ f_p, h_p = [], []
 gen_files, measured_files = [], []
 per_error = {}
 
+dms_g, dms_m = [], []
 
-for file_path in FILES:
+for file_path in natsorted(FILES):
 
     #start_time = time.time()
     file = ORIG_PATH+file_path
@@ -39,7 +40,7 @@ for file_path in FILES:
 
         lst = sum(lst, [])
         dms_gen = np.array((lst[len(lst)-lst[::-1].index("***diameter values***"):]), dtype=np.int16)
-
+        dms_g.append(dms_gen)
         ## t-test stats
         # gen_t_p.append(stats.ttest_1samp(dms_gen, popmean=20).pvalue)
         # gen_conf_low.append(stats.ttest_1samp(dms_gen, popmean=20).confidence_interval(confidence_level=0.99).low)
@@ -71,7 +72,7 @@ for file_path in FILES:
                 # lst.insert(0,"***diameter values***")
                 
                 dms_measured = np.array((lst[len(lst)-lst[::-1].index("***diameter values***"): lst.index("***time taken***")]), dtype = np.int16)
-          
+                dms_m.append(dms_measured)
 
                 measured_files.append(f_path.split(".txt")[0])
                 
@@ -104,27 +105,46 @@ for k, v in os.environ.items():
     if k.startswith("QT_") and "cv2" in v:
         del os.environ[k]
 
-reordered_keys = sorted(per_error.keys())
-reordered_dict = {k: per_error[k] for k in reordered_keys}
+#print()
+
+
+import seaborn as sns
+# data = sns.load_dataset("tips")
+# print(data.head())
+sns.set_theme(style="ticks",palette="pastel")
+lst =np.concatenate((dms_m[0],dms_m[5],dms_m[1],dms_m[6],dms_m[2],dms_m[7]))
+df = pd.DataFrame({'Generated line diameter': np.repeat( [10,20,30], 60), 'Type': np.tile(np.repeat(["Straight lines", "Curved lines"],30), 3),'Measured values': lst})
+
+sns.boxplot(data =df, x="Generated line diameter", y="Measured values",hue="Type", palette=["m", "g"])
+
+# reordered_keys = sorted(per_error.keys())
+# reordered_dict = {k: per_error[k] for k in reordered_keys}
 
 # for k, v in reordered_dict.items():
 #     plt.plot(v, label=k)
 
-print(reordered_dict)
-#print(per_error)
+# print(reordered_dict)
+# #print(per_error)
 
-# for i in range(len(per_error)):
-#     plt.plot(per_error[i], label=list(zip(gen_files, measured_files))[i])
+# # for i in range(len(per_error)):
+# #     plt.plot(per_error[i], label=list(zip(gen_files, measured_files))[i])
 
-x = np.array([10,20,30], dtype=np.uint8)
+# x = np.array([10,20,30], dtype=np.uint8)
 
-plt.plot(x,list(reordered_dict.values())[:3],label = "straight lines unordered")
-plt.plot(x,list(reordered_dict.values())[5:8],label = "curves unordered")
-#plt.xlim(5,45)¤plt.xticks([10,20,30,40])
+# plt.plot(x,list(reordered_dict.values())[:3],label = "Straight lines")
+# plt.plot(x,list(reordered_dict.values())[5:8],label = "Curved lines")
+# #plt.xlim(5,45)¤plt.xticks([10,20,30,40])
+import matplotlib.pylab as pylab
+params = {
+         'axes.labelsize': 14,
+         'xtick.labelsize':14,
+         'ytick.labelsize':14}
+pylab.rcParams.update(params)
 
-plt.xlabel("Line diameter (px)")
-plt.ylabel("Percent error (%)")
-plt.legend()
+
+# plt.xlabel("Fiber diameter (px)")
+# plt.ylabel("Percent error (%)")
+plt.legend(fontsize=14)
 plt.show()
 
 
