@@ -12,7 +12,7 @@ The `Tool setup` folder can be used when the user wants to setup the whole syste
 
 The `Example data` folder includes both simulated and real microscopy data for testing out both pipelines.
 
-The `Quick runs` folder is just a more direct way for the reader to test out some pipelines with the example data provided. In both subfolders, the "main.py" can be run using the command line with the argument of a file path. The reader should be reminded about the constraints of the pipelines, which are provided in the thesis as well as [below](#Constraints of "Fibar"). 
+The `Quick runs` folder is just a more direct way for the reader to test out some pipelines with the example data provided. In both subfolders, the "main.py" can be run using the command line with the argument of a file path. The reader should be reminded about the constraints of the pipelines, which are provided in the thesis as well as [below](#constraints-of-"Fibar"). 
 
 ## Requirements 
 The pipelines should be executed in the Python 3.8.10 environment. All of the required libraries and their versions can
