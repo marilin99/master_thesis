@@ -5,7 +5,7 @@ This repo covers most of the work done for creating the image processing tool "F
 ## Project Objective
 The goal of this project is to provide an automated microscopy image analysis tool for complex biomaterials. These are samples of electrospun fibers with encapsulated components, such as bacteria, drugs etc. The tool is divided into two pipelines - one for fiber diameter measuring, the other for bacterial cell analysis. The ultimate goal of this tool is to reduce the workload of the researcher by providing a viable alternative to the manual analysis.
 
-## Directories
+## Directories and how to run
 The `main` branch of the repo includes 3 main folders: `Tool_setup`, `Data` and `Quick_runs`. 
 
 The `Tool_setup` folder can be used when the user wants to setup the whole system. This system is being triggered by the Task Scheduler in Windows OS - a .xml is provided so the user can setup the task themselves. Additionally, some folder paths ought to be changed in the <code>runner.py</code> and the <code>main.py</code> files in the respective pipelines. The specific lines are marked with comments.
