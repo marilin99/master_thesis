@@ -21,21 +21,21 @@ be installed from the <code>requirements.txt</code> file.
 ## Constraints of "Fibar"
 
 For the fiber analysis pipeline, the system assumes the following:
-• the SEM input image can be TIF/PNG/JPG format;
-• the file name should include "_2k_" or "_5k_" if a magnification of 2k (2000x) or
+- the SEM input image can be TIF/PNG/JPG format;
+- the file name should include "_2k_" or "_5k_" if a magnification of 2k (2000x) or
 5k (5000x) was used;
-• the OCR part of the pipeline assumes that the value and unit are provided in white
+- the OCR part of the pipeline assumes that the value and unit are provided in white
 highlighted in black and the horizontal bar is white on a transparent background
 aligned below the value and unit;
-• the scale can have values 1, 2, 3, 10, 200 or 400 and units, nm or um.
+- the scale can have values 1, 2, 3, 10, 200 or 400 and units, nm or um.
 
 In case of the bacterial analysis pipeline, the following is expected:
-• the input file is CZI format;
-• the user has used red and green detectors to collect the data from the sample;
-• staining dyes or fluorescent proteins have been used in the experiment (that have
+- the input file is CZI format;
+- the user has used red and green detectors to collect the data from the sample;
+- staining dyes or fluorescent proteins have been used in the experiment (that have
 resulted in filled fluorescent bacteria);
-• the shape of the raw data has the shape (I,T,C,Y,X) where I (illumination) and T
+- the shape of the raw data has the shape (I,T,C,Y,X) where I (illumination) and T
 (time) have values of 0;
-• the input file can have up to 4 channels, but it needs to includes at least 2 channels
+- the input file can have up to 4 channels, but it needs to includes at least 2 channels
 for the red and green color.
 
