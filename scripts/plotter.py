@@ -20,6 +20,10 @@ greens_24 = [3,22,3,5,5,3,0,7]
 y = [305,293,287,602,308,242,240,219,539,274,338,272,288,442,301]
 x= np.repeat([1,2,3,4,5], 3)
 
+# plc 
+
+# plc + peo
+
 #df = pd.DataFrame({'0h_syto_PI': reds_0+greens_0, '24h_syto_PI': reds_24+greens_24})
 
 #p = sns.stripplot(data=df, size=8)
