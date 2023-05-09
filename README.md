@@ -22,7 +22,7 @@ The user should be reminded about the constraints of the pipelines, which are pr
 The pipelines should be executed in the Python 3.8.10 environment. All of the required libraries and their versions can
 be installed from the <code>requirements.txt</code> file.
 
-NB! for pytesseract to work properly, please make sure the Tesseract-OCR has been installed to the system. A Stack Overflow post is provided [here](https://stackoverflow.com/questions/50951955/pytesseract-tesseractnotfound-error-tesseract-is-not-installed-or-its-not-i)
+NB! for scale obtaining to work properly with pytesseract, please make sure the Tesseract-OCR has been installed to your system and the `tesseract.exe` path has been added to `scale_obtain`.py in the commented location. A Stack Overflow post is provided [here](https://stackoverflow.com/questions/50951955/pytesseract-tesseractnotfound-error-tesseract-is-not-installed-or-its-not-i)
 
 ## Constraints of "Fibar"
 
