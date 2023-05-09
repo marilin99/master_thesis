@@ -45,3 +45,6 @@ resulted in filled fluorescent bacteria);
 - the input file can have up to 4 channels, but it needs to includes at least 2 channels
 for the red and green color.
 
+## Issues 
+
+In case of any issues which inevitably will pop up, create a new Issue under Issues.
