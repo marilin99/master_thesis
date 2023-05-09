@@ -19,7 +19,7 @@ The `Quick_runs` folder is just a more direct way for the reader to test out som
 The user should be reminded about the constraints of the pipelines, which are provided in the thesis as well as [below](#constraints-of-"Fibar"). 
 
 ## Requirements 
-The pipelines should be executed in the Python 3.8.10 environment. All of the required libraries and their versions can
+The pipelines should be executed in the Python 3.8.10 environment (have not tested out other versions yet). All of the required libraries and their versions can
 be installed from the <code>requirements.txt</code> file.
 
 NB! for scale obtaining to work properly with pytesseract, please make sure the Tesseract-OCR has been installed to your system and the `tesseract.exe` path has been added to `scale_obtain`.py in the commented location. A Stack Overflow post is provided [here](https://stackoverflow.com/questions/50951955/pytesseract-tesseractnotfound-error-tesseract-is-not-installed-or-its-not-i)
