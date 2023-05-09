@@ -76,6 +76,39 @@ first_dm_s, first_excs, coords  = dm_finder(thinned, dist, segmented_im, pt_s, h
 # prints out diameters 
 print("Measured diameters", first_dm_s)
 
+# visualizing diameters 
+
+rgb_im = cv2.imread(PATH_1)
+
+start_color = (0, 0, 0)
+end_color = (255,0,0)  
+
+for combo in coords:
+    #combo = eval(combo)
+
+    start_point = (combo[1], combo[0])
+    mid_point = (combo[3], combo[2])
+
+    # testing the actual end point
+    end_point_x = (2 * mid_point[0]) - start_point[0]
+    end_point_y = (2 * mid_point[1]) - start_point[1]
+
+    end_point = (end_point_x, end_point_y)
+
+    # px dist
+    distance1 = np.sqrt((end_point[1] - start_point[1]) ** 2 + (end_point[0] - start_point[0]) ** 2)
+
+    cv2.line(rgb_im, start_point, mid_point, start_color, 2)
+    cv2.line(rgb_im, mid_point, end_point, (0,255,0), 2)
+
+    cv2.circle(rgb_im, mid_point, 3, end_color, -1)
+
+
+image = cv2.cvtColor(rgb_im, cv2.COLOR_RGB2BGR)
+
+cv2.imshow(f'Original image with diameter lines', image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
 
 #####
     
