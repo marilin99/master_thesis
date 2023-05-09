@@ -47,4 +47,4 @@ for the red and green color.
 
 ## Issues 
 
-In case of any issues which inevitably will pop up, create a new Issue under Issues.
+Create an "Issue" under "Issues" and let's try to fix it. 
