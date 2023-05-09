@@ -19,10 +19,6 @@ from openpyxl import load_workbook
 from datetime import datetime
 
 
-### variables ###
-base_im_r, base_im_g = np.zeros((512,512), dtype=np.uint8), np.zeros((512,512), dtype=np.uint8)
-start_time = time.time()
-
 #INSERT ABSOLUTE PATH OF INPUT IMAGE FOLDER
 PATH = ""
 
@@ -118,4 +114,4 @@ for f in natsorted(FILES):
 
     ### moving the CZI file to the processed folder
 
-    # TODO 
+    os.rename(os.path.join(PATH, f), os.path.join(TARGET_PATH, f))

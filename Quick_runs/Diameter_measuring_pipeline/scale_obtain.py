@@ -15,6 +15,11 @@ pot_units = ["nm", "um"]
 # pot scale values - should be updated if some new scales used!
 pot_values = ["10", "1", "2", "400", "200", "3"]
 
+# INSERT YOUR tesseract.exe PATH here in case of having an error
+# make sure tesseract OCR is installed too
+# pytesseract.pytesseract.tesseract_cmd = 'tesseract.exe PATH'
+
+
 
 def scale_obtain(file):
 

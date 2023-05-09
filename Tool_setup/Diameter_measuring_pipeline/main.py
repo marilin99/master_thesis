@@ -100,7 +100,7 @@ for f in FILES:
 
     ## moving the file to the target path ## 
 
-    # TODO
+    os.rename(os.path.join(ORIG_PATH, f), os.path.join(TARGET_PATH, f))
 
 
     #####

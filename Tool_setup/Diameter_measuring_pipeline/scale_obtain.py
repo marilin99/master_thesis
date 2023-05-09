@@ -1,4 +1,5 @@
 # CODE for obtaining the scale from the SEM image #
+#!/usr/bin/python3
 # libraries
 import numpy as np
 import cv2
@@ -14,6 +15,10 @@ value_unit_scale = []
 pot_units = ["nm", "um"]
 # pot scale values - should be updated if some new scales used!
 pot_values = ["10", "1", "2", "400", "200", "3"]
+
+# INSERT YOUR tesseract.exe PATH here in case of having an error
+# make sure tesseract OCR is installed too
+# pytesseract.pytesseract.tesseract_cmd = 'tesseract.exe PATH'
 
 
 def scale_obtain(file):
