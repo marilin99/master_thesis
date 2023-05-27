@@ -17,7 +17,7 @@ The `Quick_runs` folder is just a more direct way for the reader to test out som
 - In case of the Diameter measuring pipeline, 3 arguments should be provided by the user: absolute file path of the SEM image, name of method ("U-Net" or "Classical"), number of diameter measurements (for example, <code>python3 Quick_runs/Diameter_measuring_pipeline/main.py Data/SEM_images/10k_example.tif "U-Net" 10 </code>). The output of this pipeline is a list of diameter values as well as visulization of the diameters on the original image. (The visualization does approximation and some obscure lines may occur which do not reflect the actual diameter values)
 - In case of the bacterial cell pipeline, 1 arguments should be provided by the user: absolute file path of the CZI file (for example, <code>python3 Quick_runs/Bacterial_cell_pipeline/main.py Data/CZI_files/ex_1.czi </code>). Runnning this pipeline will output the amount of red and green bacteria found in the sample.
 
-The user should be reminded about the constraints of the pipelines, which are provided in the thesis as well as [below](#constraints-of-"Fibar"). 
+The user should be reminded about the constraints of the pipelines, which are provided in the [thesis](https://comserv.cs.ut.ee/ati_thesis/datasheet.php?id=77433&language=en) as well as [below](#constraints-of-"Fibar"). 
 
 ## Requirements 
 The pipelines should be executed in the Python 3.8.10 environment (have not tested out other versions yet). All of the required libraries and their versions can
