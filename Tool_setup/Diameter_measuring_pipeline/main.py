@@ -59,8 +59,8 @@ for f in FILES:
 
 
         ## CLASSICAL segmentation ##
-        # otsu thresholding for 2k and 5k if specified in path
-        if re.search("(_2k_|_5k_|2k)", PATH_1) != None:
+        # otsu thresholding for 2k and 5k and 500x if specified in path
+        if re.search("(5k|2k|500x|500k)", PATH_1) != None:
             
             segmented_im = cv2.threshold(cv2.imread(PATH_1, 0), 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)[1]
             dist, thinned = thinner_2k_5k(segmented_im)

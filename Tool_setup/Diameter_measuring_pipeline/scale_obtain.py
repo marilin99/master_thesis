@@ -159,13 +159,13 @@ def scale_obtain(file):
     
     
 #ORIG_PATH = "/run/user/1000/gvfs/smb-share:server=gaia.domenis.ut.ee,share=mvfa/Automaatika/SEM_processed/"
-ORIG_PATH = "/home/marilin/Documents/ESP/master_thesis/Data/SEM_images/"
-FILES = os.listdir(ORIG_PATH)
+#ORIG_PATH = "/home/marilin/Documents/ESP/master_thesis/Data/SEM_images/"
+#FILES = os.listdir(ORIG_PATH)
 #FILES = ["7gel02kit 10kx 2.tif"]
 
-for file in FILES:
-    print(file)
-    print(scale_obtain(ORIG_PATH+file))
+#for file in FILES:
+#    print(file)
+#    print(scale_obtain(ORIG_PATH+file))
 
 
 # # scale_obtain("/run/user/1000/gvfs/smb-share:server=gaia.domenis.ut.ee,share=mvfa/Automaatika/SEM_input/3gel 02kit hfip 10k 1.tif")
