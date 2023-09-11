@@ -14,7 +14,7 @@ value_unit_scale = []
 # list of units
 pot_units = ["nm", "um"]
 # pot scale values - should be updated if some new scales used!
-pot_values = ["1", "2", "3", "4", "10", "20", "100", "200", "400"]
+pot_values = ["1", "2", "3", "4", "10", "20", "30", "100", "200", "400"]
 
 # INSERT YOUR tesseract.exe PATH here in case having an error
 # make sure tesseract OCR is installed too
