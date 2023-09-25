@@ -20,6 +20,7 @@ pot_values = ["1", "2", "3", "4", "10", "20", "30", "100", "200", "400"]
 # make sure tesseract OCR is installed too
 # uncomment for lab pc
 #pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = r'C:/home/marilin/fibar_tool_venv/bin/pytesseract'
 
 
 def scale_obtain(file):
