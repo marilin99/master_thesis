@@ -1,6 +1,6 @@
 # "Fibar": a Tool for Automated Analysis of Complex Biomaterials from Microscopy Images
 
-This repo covers most of the work done for creating the image processing tool "Fibar". The `dev` branch is for development, while the `main` branch is for users who would like to setup the tool or test the tool out. 
+This repo covers most of the work done for creating the image processing tool "Fibar". The `dev` branch is for development, while the `main` branch is for users who would like to setup the tool or test the tool out. This is the post-release-branch where ideas from the thesis are tested.
 
 ## Project Objective
 The goal of this project is to provide an automated microscopy image analysis tool for complex biomaterials. These are samples of electrospun fibers with encapsulated components, such as bacteria, drugs etc. The tool is divided into two pipelines - one for fiber diameter measuring, the other for bacterial cell analysis. The ultimate goal of this tool is to reduce the workload of the researcher by providing a viable alternative to the manual analysis.
