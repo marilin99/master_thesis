@@ -11,7 +11,8 @@ from tensorflow import keras
 
 def net_prediction(file_path:str):
     #UNET file path to be INSERTED HERE #
-    model = keras.models.load_model("unet3_model.h5")
+    MODEL_PATH = "/home/marilin/fibar_tool/Quick_runs/Diameter_measuring_pipeline/unet3_model.h5"
+    model = keras.models.load_model(MODEL_PATH)
   
     test = np.array(Image.open(file_path)).astype(float)
 
