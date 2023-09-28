@@ -96,7 +96,9 @@ def scale_obtain(file):
     number = img[min(x_coords):max(x_coords), min(y_coords): min(y_coords) + cutting_idx]
     number = np.pad(number, pad_width = [(1, 1),(1, 1)], mode = "constant")
 
-    #cv2.imshow("number", np.uint8(number))
+    # cv2.imshow("number", np.uint8(number))
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
     # segmentation technique - one line with many possible char-s
     # https://github.com/madmaze/pytesseract
@@ -104,45 +106,45 @@ def scale_obtain(file):
     # takes an image as one single character
     custom_config= r'--psm 10' 
 
-    try:
-        for val in range(10,30, 1):
-            detected_nr = str(pytesseract.image_to_string(cv2.resize(number, (val, val)), config =custom_config, timeout = 5)).split("y\n\x0c")[0].strip() # Timeout after 2 seconds
-            # give nr options
-            #print("numero", detected_nr)
-            if detected_nr in pot_values:
-                value_unit_scale.append(int(detected_nr))
-                # extra list in case more than one value is detected 
-                counter.append(1)
+    #try:
+    for val in range(10,30, 1):
+        detected_nr = str(pytesseract.image_to_string(cv2.resize(number, (val, val)), config =custom_config, timeout = 5)).split("y\n\x0c")[0].strip() # Timeout after 2 seconds
+        # give nr options
+        #print("numero", detected_nr)
+        if detected_nr in pot_values:
+            value_unit_scale.append(int(detected_nr))
+            # extra list in case more than one value is detected 
+            counter.append(1)
 
-            detected_unit = str(pytesseract.image_to_string(cv2.resize(unit, (val, val)), config =custom_config, timeout = 5)).split("y\n\x0c")[0].strip() # Timeout after 2 seconds
-            #print(detected_unit)
-            if detected_unit in pot_units:
-                value_unit_scale.append(detected_unit)
-                counter.append(2)
+        detected_unit = str(pytesseract.image_to_string(cv2.resize(unit, (val, val)), config =custom_config, timeout = 5)).split("y\n\x0c")[0].strip() # Timeout after 2 seconds
+        #print(detected_unit)
+        if detected_unit in pot_units:
+            value_unit_scale.append(detected_unit)
+            counter.append(2)
 
-            #print(counter)
-            #print(value_unit_scale)
-            if len(np.unique(counter)) == 2:
-                state_counts = np.unique(value_unit_scale, return_counts=True)[1]
-                # checking for unique values and occurring once 
-                if np.in1d(state_counts, 1).all():
-                    value_unit_scale = list(np.unique(value_unit_scale))
+        #print(counter)
+        #print(value_unit_scale)
+        if len(np.unique(counter)) == 2:
+            state_counts = np.unique(value_unit_scale, return_counts=True)[1]
+            # checking for unique values and occurring once 
+            if np.in1d(state_counts, 1).all():
+                value_unit_scale = list(np.unique(value_unit_scale))
+            else:
+                max_num = np.unique(value_unit_scale)[np.argmax(state_counts)]
+                #val = np.unique(value_unit_scale)[max_idx]
+                #fin_unit = value_unit_scale[-1]
+                # adding only the value
+                if isinstance(max_num, int):
+                    value_unit_scale = [max_num, detected_unit]
                 else:
-                    max_num = np.unique(value_unit_scale)[np.argmax(state_counts)]
-                    #val = np.unique(value_unit_scale)[max_idx]
-                    #fin_unit = value_unit_scale[-1]
-                    # adding only the value
-                    if isinstance(max_num, int):
-                        value_unit_scale = [max_num, detected_unit]
-                    else:
-                        value_unit_scale = list(np.unique(value_unit_scale))
+                    value_unit_scale = list(np.unique(value_unit_scale))
 
-                break
+            break
 
 
-    except RuntimeError as timeout_error:
-    # Tesseract processing is terminated
-        pass
+    # except RuntimeError as timeout_error:
+    # # Tesseract processing is terminated
+    #     pass
     ################################################################
 
     # contouring the scale
@@ -160,13 +162,11 @@ def scale_obtain(file):
     
     
 #ORIG_PATH = "/run/user/1000/gvfs/smb-share:server=gaia.domenis.ut.ee,share=mvfa/Automaatika/SEM_processed/"
-#ORIG_PATH = "/home/marilin/Documents/ESP/master_thesis/Data/SEM_images/"
-#FILES = os.listdir(ORIG_PATH)
-#FILES = ["7gel02kit 10kx 2.tif"]
+# ORIG_PATH = "/home/marilin/fibar_tool/Data/SEM_images/"
+# FILES = os.listdir("/home/marilin/fibar_tool/Data/SEM_images")
 
-#for file in FILES:
-#    print(file)
-#    print(scale_obtain(ORIG_PATH+file))
+# for file in FILES:
+#    scale_obtain(ORIG_PATH+file)
 
 
 # # scale_obtain("/run/user/1000/gvfs/smb-share:server=gaia.domenis.ut.ee,share=mvfa/Automaatika/SEM_input/3gel 02kit hfip 10k 1.tif")
