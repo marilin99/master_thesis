@@ -23,6 +23,7 @@ pot_values = ["1", "2", "3", "4", "10", "20", "30", "100", "200", "400"]
 #pytesseract.pytesseract.tesseract_cmd = r'C:/home/marilin/fibar_tool_venv/bin/pytesseract'
 
 
+
 def scale_obtain(file):
 
     """
