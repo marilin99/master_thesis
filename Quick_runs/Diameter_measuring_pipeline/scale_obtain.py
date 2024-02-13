@@ -15,6 +15,8 @@ value_unit_scale = []
 pot_units = ["nm", "um"]
 # pot scale values - should be updated if some new scales used!
 pot_values = ["1", "2", "3", "4", "10", "20", "30", "100", "200", "400"]
+pot_digits = ["0", "1", "2","3","4"]
+
 
 # INSERT YOUR tesseract.exe PATH here in case having an error
 # make sure tesseract OCR is installed too
@@ -39,11 +41,19 @@ def scale_obtain(file):
 
     thresh = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY_INV)[1]
 
-    result = img.copy()
-    contours = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
-    #cv2.imshow("thresh", np.uint8(thresh))
+    # assuming the scale is in the LL quarter 
+    empty_im = np.zeros_like(thresh)
+    cont_thresh = thresh[thresh.shape[0]//2:,:thresh.shape[1]//2]
+    #cv2.imshow("cont_thresh", cont_thresh)
+    empty_im[empty_im.shape[0]//2:,:empty_im.shape[1]//2]  = cont_thresh
 
+
+
+
+    result = img.copy()
+    contours = cv2.findContours(empty_im, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    #cv2.imshow("empty_im", np.uint8(empty_im))
     contours = contours[0] if len(contours) == 2 else contours[1]
     #print(contours)
 
@@ -58,7 +68,6 @@ def scale_obtain(file):
     except: 
         big_contour = max(contours, key=cv2.contourArea)
     
-    #print(big_contour)
 
     # big_contour struc: [a][0][b], where a is the corner idx (runs from upper left + ↓ and upper right + ↓), b is either y [0] or x [1] coord
     # initial flattened big contour list y1 x1 y2 x2 etc.
@@ -66,7 +75,7 @@ def scale_obtain(file):
     y_coords = big_contour.flatten()[::2]
     x_coords = big_contour.flatten()[1::2]
 
-    # for drawing purposes
+    # for drawing purposesoppenheimer aaron hibell trance remix
     if len(big_contour) > 4:
         big_contour = np.array([ [[min(y_coords), max(x_coords)]], [[min(y_coords), min(x_coords)]], [[max(y_coords), min(x_coords)]], [[max(y_coords), max(x_coords)]] ])
 
@@ -91,57 +100,78 @@ def scale_obtain(file):
     # extracting unit
     unit = img[min(x_coords):max(x_coords), min(y_coords) + cutting_idx:max(y_coords)]
     unit = np.pad(unit, pad_width = [(1, 1),(1, 1)], mode = "constant")
-    #cv2.imshow("unit", np.uint8(unit))
+    #unit = skimage.morphology.medial_axis(unit).astype(np.uint8)
+    unit[unit == 1] = 255
+    # cv2.imshow("unit", np.uint8(unit))
 
     # extracting number
     number = img[min(x_coords):max(x_coords), min(y_coords): min(y_coords) + cutting_idx]
+    #cv2.imshow("number", np.uint8(unit))
     number = np.pad(number, pad_width = [(1, 1),(1, 1)], mode = "constant")
 
-    # cv2.imshow("number", np.uint8(number))
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+    ## number to digits ## 
+    first_row_of_whites = np.min(np.nonzero(number)[0])
+    full_extent = number.shape[1]
 
-    # segmentation technique - one line with many possible char-s
-    # https://github.com/madmaze/pytesseract
-    # https://muthu.co/all-tesseract-ocr-options/
-    # takes an image as one single character
+    nr_cross = number[first_row_of_whites: first_row_of_whites+1, :full_extent].flatten()
+    # print(nr_cross)
+    nonz_locs = np.nonzero(nr_cross)[0]
+    # print(nonz_locs)
+
+    # print(int(number.shape[0] //2 ))
+    
+    # nr_cross = number[int(number.shape[0] //2 ): int( number.shape[0] //2 )+1, :number.shape[1]]
+    # print(nr_cross)
+    nr_ar_z = np.insert(np.nonzero(nr_cross), 0, 0)
+    diff_between_zeros = np.ediff1d(nr_ar_z) 
+    # print(diff_between_zeros)
+    idxs = np.where(diff_between_zeros > 1)[0]
+    # print(idxs)
+    cuts = []
+    for val in idxs[idxs!=0]:
+        cuts.append(int(np.mean((nonz_locs[val], nonz_locs[val-1]))))
+    
+    cuts.insert(0,0)
+    cuts.append(number.shape[1])
     custom_config= r'--psm 10' 
 
-    #try:
-    for val in range(10,30, 1):
-        detected_nr = str(pytesseract.image_to_string(cv2.resize(number, (val, val)), config =custom_config, timeout = 5)).split("y\n\x0c")[0].strip() # Timeout after 2 seconds
-        # give nr options
-        #print("numero", detected_nr)
-        if detected_nr in pot_values:
-            value_unit_scale.append(int(detected_nr))
-            # extra list in case more than one value is detected 
-            counter.append(1)
+    compound_nr = ""
+    
+    for i, cut in enumerate(cuts):
+        if i != len(cuts)-1:
+            detected_nr, detected_unit = [], []
 
-        detected_unit = str(pytesseract.image_to_string(cv2.resize(unit, (val, val)), config =custom_config, timeout = 5)).split("y\n\x0c")[0].strip() # Timeout after 2 seconds
-        #print(detected_unit)
-        if detected_unit in pot_units:
-            value_unit_scale.append(detected_unit)
-            counter.append(2)
+            digit = number[:number.shape[0], cut:cuts[i+1]]
+            digit = np.pad(digit, pad_width = [(1, 1),(1, 1)], mode = "constant")
+             
+            # cv2.imshow("digit", np.uint8(digit))
+            # cv2.waitKey(0)
+            # cv2.destroyAllWindows()
 
-        #print(counter)
-        #print(value_unit_scale)
-        if len(np.unique(counter)) == 2:
-            state_counts = np.unique(value_unit_scale, return_counts=True)[1]
-            # checking for unique values and occurring once 
-            if np.in1d(state_counts, 1).all():
-                value_unit_scale = list(np.unique(value_unit_scale))
-            else:
-                max_num = np.unique(value_unit_scale)[np.argmax(state_counts)]
-                #val = np.unique(value_unit_scale)[max_idx]
-                #fin_unit = value_unit_scale[-1]
-                # adding only the value
-                if isinstance(max_num, int):
-                    value_unit_scale = [max_num, detected_unit]
-                else:
-                    value_unit_scale = list(np.unique(value_unit_scale))
+            for val in range(10,30, 1):
+                detected_nr.append(str(pytesseract.image_to_string(cv2.resize(digit, (val, val)), config =custom_config, timeout = 5)).split("y\n\x0c")[0].strip()) # Timeout after 2 seconds
+                if i == 0:
+                    detected_unit.append(str(pytesseract.image_to_string(cv2.resize(unit, (val, val)), config =custom_config, timeout = 5)).split("y\n\x0c")[0].strip()) # Timeout after 2 seconds
 
-            break
+            for unit in detected_unit:
+                if unit in pot_units:
+                    value_unit_scale.append(unit)
 
+                    # found_unit = max(set(detected_unit), key=detected_unit.count)
+                    # if found_unit in pot_units:
+                    #     value_unit_scale.append(found_unit)
+        
+            detected_ints = np.array([int(val) for val in detected_nr if val.isnumeric() and val in pot_digits])
+            vals, counts = np.unique(detected_ints, return_counts=True)
+            
+            compound_nr += str(vals[np.argmax(counts)])
+
+
+        else:
+            pass
+    
+    value_unit_scale.append(int(compound_nr))
+    value_unit_scale = list(np.unique(value_unit_scale))
 
     # except RuntimeError as timeout_error:
     # # Tesseract processing is terminated
