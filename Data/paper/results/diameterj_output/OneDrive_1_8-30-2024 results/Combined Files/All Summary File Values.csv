@@ -1,0 +1,25 @@
+ ,Metric,3 4 pclpeo cam kelli 10k67_S1_Total Summary.csv,3 4 pclpeo cam kelli 10k71_S1_Total Summary.csv,PCL PEO CAM kont 160818 x10k12_S1_Total Summary.csv
+1,Super Pixel,60.8102,64.0180,68.4715
+2,Histogram Mean,15.7730,13.8370,5.1412
+3,Histogram SD,11.0028,9.4498,58.2129
+4,Histogram Mode,6.0000,12.0000,8.0000
+5,Histogram Median,20.0000,24.0000,36.0000
+6,Histogram Min Diam.,2.0000,2.0000,2.0000
+7,Histogram Max Diam.,190.0000,184.0000,134.0000
+8,Histogram Integrated Density,86230.0000,85174.0000,68143.0000
+9,Histogram Raw Integrated Density,86230.0000,85174.0000,68143.0000
+10,Diameter Skewness,2.1990,1.3280,0.4515
+11,Diameter Kurtosis,7.0662,1.4153,-0.9054
+12,Fiber Length,5807.0000,4831.0000,3087.0000
+13,Mean Pore Area,2089.3488,4795.4583,5725.6250
+14,Pore Area SD,2843.9293,6650.3288,8074.5114
+15,Min. Pore Area,21.0000,123.0000,184.0000
+16,Max. Pore Area,12649.0000,22998.0000,24476.0000
+17,Percent Porosity,0.3288,0.4004,0.6019
+18,Number of Pores,43.0000,24.0000,8.0000
+19,# of Intersections,116.0000,78.0000,34.0000
+20,Intersection Density (100x100px),1.4750,0.9918,0.4323
+21,Char. Length,64.2087,74.3039,93.7212
+22,SD Char. Length,55.1412,68.4059,86.2651
+23,Max Span Length,308.0366,387.6417,440.3452
+24,Old Char. Length (Tot. Fiber Len./# intersections),77.4656,95.5318,136.4141

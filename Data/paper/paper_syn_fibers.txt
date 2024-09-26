@@ -1,0 +1,24 @@
+sent for measuring (paper): 
+
+
+## 2-tone fibers ## 
+
+/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/three_dm_fibers/binary_unordered_curved_[10, 15, 20].png "alias: binary_5"
+
+/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/three_dm_fibers/binary_unordered_[10, 15, 20].png - "alias: binary_0"
+
+/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/three_dm_fibers/binary_unordered_[15, 20, 25].png - "alias: binary_2"
+
+/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/three_dm_fibers/binary_unordered_curved_[15, 20, 25].png - "alias: binary_3"
+
+/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/2_tone_fibers/binary_1.png # normally distributed (mean=20 pixels, standard deviation=5 pixels) sizes
+/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/2_tone_fibers/binary_4.png 
+/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/2_tone_fibers/binary_6.png
+
+## scale bars ##
+
+"/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/horizontal_bars/bar_50.png"- "alias bar_1" 
+
+"/home/marilin/Documents/ESP/data/fiber_tests/synthesised_fibers/horizontal_bars/bar_60.png"- "alias bar_2" 
+
+etc.

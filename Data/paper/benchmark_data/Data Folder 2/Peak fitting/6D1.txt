@@ -1,0 +1,96 @@
+Fit completed 5:13 PM Tuesday, June 24, 2014
+Y data wave: root:X6D1
+X data wave: root:Diameter
+Chi square: 80467
+Total fitted points: 256
+Multi-peak fit version 2.16
+Total Peak Area = 11189 +/- 400.92
+
+Baseline	Type: Constant
+
+	y0 = 	2.0287	 +/- 	1.2996
+
+Peak 0	Type: Gauss
+
+	Location = 	15.538	 +/- 	0.068012
+	Height = 	507.39	 +/- 	20.122
+	Area = 	1830.8	 +/- 	73.334
+	FWHM = 	3.3897	 +/- 	0.15584
+
+	Fit function parameters
+	Location =	15.538	+/-	0.068012
+	Width =	2.0357	+/-	0.093589
+	Height =	507.39	+/-	20.122
+
+Peak 1	Type: Gauss
+
+	Location = 	30.303	 +/- 	0.14234
+	Height = 	311.71	 +/- 	15.5
+	Area = 	1905.9	 +/- 	98.578
+	FWHM = 	5.7441	 +/- 	0.34099
+
+	Fit function parameters
+	Location =	30.303	+/-	0.14234
+	Width =	3.4497	+/-	0.20478
+	Height =	311.71	+/-	15.5
+
+Peak 2	Type: Gauss
+
+	Location = 	45.255	 +/- 	0.38464
+	Height = 	177.36	 +/- 	11.948
+	Area = 	1934.7	 +/- 	160.55
+	FWHM = 	10.248	 +/- 	1.0152
+
+	Fit function parameters
+	Location =	45.255	+/-	0.38464
+	Width =	6.1544	+/-	0.60969
+	Height =	177.36	+/-	11.948
+
+Peak 3	Type: Gauss
+
+	Location = 	60.509	 +/- 	0.77206
+	Height = 	88.524	 +/- 	11.949
+	Area = 	957.64	 +/- 	162.88
+	FWHM = 	10.163	 +/- 	2.0511
+
+	Fit function parameters
+	Location =	60.509	+/-	0.77206
+	Width =	6.1034	+/-	1.2318
+	Height =	88.524	+/-	11.949
+
+Peak 4	Type: Gauss
+
+	Location = 	82.496	 +/- 	0.87573
+	Height = 	108.15	 +/- 	10.734
+	Area = 	1566.8	 +/- 	227.68
+	FWHM = 	13.61	 +/- 	2.4123
+
+	Fit function parameters
+	Location =	82.496	+/-	0.87573
+	Width =	8.1735	+/-	1.4488
+	Height =	108.15	+/-	10.734
+
+Peak 5	Type: Gauss
+
+	Location = 	92.823	 +/- 	0.35324
+	Height = 	114.55	 +/- 	21.737
+	Area = 	514.55	 +/- 	154.33
+	FWHM = 	4.2201	 +/- 	1.0228
+
+	Fit function parameters
+	Location =	92.823	+/-	0.35324
+	Width =	2.5344	+/-	0.61428
+	Height =	114.55	+/-	21.737
+
+Peak 6	Type: Gauss
+
+	Location = 	110.53	 +/- 	0.27471
+	Height = 	216.76	 +/- 	11.344
+	Area = 	2478.6	 +/- 	132.97
+	FWHM = 	10.742	 +/- 	0.65406
+
+	Fit function parameters
+	Location =	110.53	+/-	0.27471
+	Width =	6.4515	+/-	0.3928
+	Height =	216.76	+/-	11.344
+

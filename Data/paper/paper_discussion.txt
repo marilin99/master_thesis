@@ -1,0 +1,69 @@
+FiBar meeting notes (30.06)
+
+* tool paper 
+* template options - journals 
+* examples: gprofiler, pawer and others. 
+* start with high-lvl journals (nature comm-s, nar, bmc, oxford)
+* expectations - dima will just be reading
+* both pipelines should be described - fiber and bacteria analysis 
+* biomaterial angle 
+* installer vs web tools
+* MIT licence q - conditions, purposes - cite, permissible 
+* libraries' citations
+* pre-print: not important 
+* deadline: end of august 
+* holidays: karin end of 14.08, dima: 02.-22.07, marta: 3 weeks 
+
+
+### possible improvements ###
+
+* git improvements: commit recent work 
+* ocr improvement: consider floodfill instead - comparing to the known values
+* find a better way to automatize the system - email based for now - maybe consider a button or sth that would trigger it in the pc?
+* check 
+* crossing check?
+* perpendicularity check compared to the starting point 
+* bacteria pipeline adaptivity
+* installer creation 
+
+###
+
+I think that this could be a tool paper, rather than analysis paper, hence no need for a very thorough analysis of some specific data, just sufficient to show that your tool works
+
+I agree that this is a tool paper, and I actually would like that both analyses methods (SEM+ bacteria) would be included....but again we can discuss this. 
+
+Journal verdict 
+
+1) it seemed that Nature Methods might not be a good venue for us, because they are normally looking for wide-ranging applications in biology, I am not sure if the domain the tool Marilin has developed covers wide enough ground there. Instead, we might want to try Nature Biotechnology, which has a bit narrower scope. Here is a tool paper published in this journal: https://www.nature.com/articles/nbt.3122#Sec2. There are also Nature Communications and Nature Scientific Reports (in this order) that publish different things.
+
+2) Also, NAR may only be good if we go for a web-tool option, which does not seem to be the case at this point.
+
+3) Bioinformatics, BMC Bioinformatics, and PLOS ONE all seem to be relevant and good.
+
+
+She proposed collaborating on this tool, getting help from our developers to make a web tool, submitting it to Nature Biotechnology, and also getting the tool listed on their Elixir website https://elixir.ut.ee/services. This would also ensure the tool is supported even after Marilin moves on to something else.
+
+If we really want to start with Nature group journals then it might fit better to Nature Materials (compared to Nature Biotechnology): 
+
+--> Nature Materials then? 
+
+###
+
+hedi - karin - marta - marilin - dima sit-down 
+
+principle things: is everyone fairly treated? 
+potential users - what is the approx. amount? 
+expectations: maintaining the tool and development funding from karin's side? 
+
+august-sept on-site 
+
+if we wish to take the elixir path: sw evaluation, professionalism, completely different writing;
+if someone wants to cite the tool: thesis for now;
+
+pre-print option? paper format?
+
+
+## 
+send out email enquiring to meet up and talk about what are the potential paths fibar may take 
+
+

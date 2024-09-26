@@ -1,0 +1,107 @@
+results for multi-modality
+
+
+
+when generating 750 points 
+
+multi_modality_0 
+
+spearman correlation coeff (sorted)
+
+simp SignificanceResult(statistic=0.9396283308464443, pvalue=0.0)
+dj SignificanceResult(statistic=0.9256444105728018, pvalue=6.32494e-318)
+fibar SignificanceResult(statistic=0.9268317365307778, pvalue=1.932e-320)
+new_gen SignificanceResult(statistic=0.9999999999999999, pvalue=0.0) 
+
+mse (sorted) 
+
+new_gen 0.0
+simp 109.15935058426669
+dj 22.249333333333333
+fibar 19.562666666666665
+
+######################################
+
+multi_modality_2 
+
+spearman correlation coeff (sorted)
+SignificanceResult(statistic=0.9191997257134654, pvalue=5.763323277700668e-305) # simp
+SignificanceResult(statistic=0.9021115159171864, pvalue=3.001412185462059e-275) # dj
+SignificanceResult(statistic=0.8981342146167004, pvalue=4.057231053106232e-269) # fibar
+SignificanceResult(statistic=1.0, pvalue=0.0) # new_gen 
+
+mse (sorted)
+#############
+new_gen 0.0
+simp 75.4330993746
+dj 30.025333333333332
+fibar 28.221333333333334
+
+
+#############################################
+when cutting data into 30s
+
+multi_modality_0 
+
+spearman correlation coeff (sorted) 
+#############
+simp 
+mean: 0.9378408172128948
+ci: 0.9314471911854455 - 0.9428486146703546
+
+dj 
+mean: 0.9191377116428572
+ci: 0.8792159328027338 - 0.9548955377133621
+
+fibar 
+mean: 0.9185456294448586
+CI: 0.8554933101249802 - 0.9623267434681579
+
+mse sorted 
+#############
+dj
+0.9411733333333333
+0.36133333333333334 1.668
+
+simp
+4.389739356704001
+1.6297014730666664 11.348795802426668
+
+fibar
+0.8331733333333333
+0.19866666666666666 2.066666666666667
+
+###################################### 
+
+multi_modality_2
+
+spearman correlation coeff (sorted) 
+#############
+dj
+mean: 0.8994944367688069
+CI: 0.8392485073939308-0.9363696847041004
+
+simp
+mean: 0.9197856002059112
+CI: 0.9143143227108875-0.9231516752269487
+
+fibar
+mean: 0.908740675804592
+CI: 0.877893612246065-0.945834493444204
+
+mse sorted 
+#############
+dj
+mean: 1.2330133333333333
+CI: 0.74-2.484
+
+simp
+mean: 3.104494054984
+CI: 1.1172104791466668-5.25260118096
+
+fibar 
+
+mean: 1.1501866666666667
+CI: 0.192-2.2693333333333334
+
+

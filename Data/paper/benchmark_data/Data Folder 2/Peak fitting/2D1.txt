@@ -1,0 +1,36 @@
+Fit completed 4:54 PM Tuesday, June 24, 2014
+Y data wave: root:X2D1
+X data wave: root:Diameter
+Chi square: 1.0938e+06
+Total fitted points: 256
+Multi-peak fit version 2.16
+Total Peak Area = 45010 +/- 331.74
+
+Baseline	Type: Constant
+
+	y0 = 	11.512	 +/- 	4.2012
+
+Peak 0	Type: Gauss
+
+	Location = 	8.8461	 +/- 	0.0074
+	Height = 	16740	 +/- 	280.24
+	Area = 	44579	 +/- 	222.97
+	FWHM = 	2.5018	 +/- 	0.046507
+
+	Fit function parameters
+	Location =	8.8461	+/-	0.0074
+	Width =	1.5025	+/-	0.02793
+	Height =	16740	+/-	280.24
+
+Peak 1	Type: Gauss
+
+	Location = 	81.947	 +/- 	0.97392
+	Height = 	132.64	 +/- 	66.486
+	Area = 	431.38	 +/- 	245.63
+	FWHM = 	3.0552	 +/- 	1.622
+
+	Fit function parameters
+	Location =	81.947	+/-	0.97392
+	Width =	1.8349	+/-	0.97409
+	Height =	132.64	+/-	66.486
+

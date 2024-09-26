@@ -1,0 +1,13 @@
+Diameter_Metrics,Diameter_Values,_,Other_Metrics,Values
+Super Pixel,33.4405, ,Mean Pore Area,6524.4348
+Histogram Mean,27.7187, ,Pore Area SD,15628.5837
+Histogram SD,21.1071, ,Min. Pore Area,10.0000
+Histogram Mode,36.0000, ,Max. Pore Area,71480.0000
+Histogram Median,30.0000, ,Percent Porosity,0.5142
+Histogram Min Diam.,2.0000, ,Number of Pores,23.0000
+Histogram Max Diam.,106.0000, ,# of Intersections,131.0000
+Histogram Integrated Density,102727.0000, ,Intersection Density (100x100px),1.6658
+Histogram Raw Integrated Density,102727.0000, ,Char. Length,48.5556
+Diameter Skewness,0.4580, ,SD Char. Length,50.3565
+Diameter Kurtosis,-0.0289, ,Max Span Length,295.1665
+Fiber Length,6654.0000, ,Old Char. Length (Tot. Fiber Len./# intersections),87.2039
